@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from '@vercel/analytics/next';
 import "./globals.css";
 import SiteJsonLd from "./components/site-json-ld";
 import { getSiteUrl } from "../lib/site-url";
@@ -101,6 +102,7 @@ export default function RootLayout({
       <body>
         <SiteJsonLd />
         {children}
+        <Analytics />
       </body>
     </html>
   );
