@@ -24,6 +24,12 @@ TelegramControl là module Magisk chạy nền qua `service.sh`, long‑polling 
 
 Sau khi cài, module chỉ nhận lệnh từ **Chat ID** bạn đã nhúng vào ZIP.
 
+### Cập nhật module (không cần gỡ bản cũ)
+
+- Bản **stable**: Magisk → module → **Cập nhật** (OTA qua `updateJson`). Gói OTA **không** chứa `config.sh` nên token/Chat ID được **giữ nguyên**.
+- Bản **beta** trên GitHub: đặt `ota/channel.json` → `"activeChannel": "beta"` trước khi build/sync — module **không** có nút OTA, tránh user stable cập nhật nhầm bản thử nghiệm.
+- Chi tiết phát hành: xem [`ota/README.md`](ota/README.md).
+
 ### Cấu hình thủ công (không dùng web)
 
 - Copy `config.sh.example` → `config.sh`, đặt `TELEGRAM_TOKEN` và `TELEGRAM_CHAT_ID`.
@@ -87,6 +93,12 @@ TelegramControl is a Magisk module that runs in the background via `service.sh` 
 - Download `TelegramControl.zip`, flash in Magisk/KernelSU, then **reboot**.
 
 After install, the module only accepts commands from the **Chat ID** embedded in the ZIP.
+
+### Updating (no uninstall)
+
+- **Stable** builds: Magisk → module → **Update** (OTA via `updateJson`). OTA ZIP has **no** `config.sh`, so your token/Chat ID is **preserved**.
+- **Beta** on GitHub: set `ota/channel.json` → `"activeChannel": "beta"` before sync/build — no public OTA for end users.
+- Release process: [`ota/README.md`](ota/README.md).
 
 ### Manual configuration (without the website)
 

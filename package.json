@@ -1,5 +1,13 @@
 {
   "private": true,
   "name": "magisk-telegram-control",
-  "version": "0.0.0"
+  "version": "0.0.0",
+  "scripts": {
+    "sync": "node web/scripts/sync-module.mjs",
+    "build:ota": "node web/scripts/sync-module.mjs && node scripts/build-ota-zip.mjs",
+    "ota:publish": "node scripts/publish-stable-ota.mjs"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1"
+  }
 }

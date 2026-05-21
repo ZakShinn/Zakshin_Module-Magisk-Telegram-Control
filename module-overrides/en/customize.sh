@@ -35,6 +35,20 @@ _tg_progress_bar 8 "Initializing checks…"
 [ -n "$MODPATH" ] || abort "! Install error: MODPATH is not set."
 [ -d "$MODPATH" ] || abort "! Install error: module directory missing."
 
+TG_HAD_CONFIG=0
+[ -f "$MODPATH/config.sh" ] && TG_HAD_CONFIG=1
+ZIP_HAS_CONFIG=0
+if [ -n "$ZIPFILE" ] && [ -f "$ZIPFILE" ]; then
+  unzip -l "$ZIPFILE" 2>/dev/null | grep -qE '[[:space:]]config\.sh$' && ZIP_HAS_CONFIG=1
+fi
+if [ "$ZIP_HAS_CONFIG" -eq 0 ] && [ "$TG_HAD_CONFIG" -eq 1 ]; then
+  ui_print "- Module update: keeping your config.sh (no uninstall needed)."
+elif [ "$ZIP_HAS_CONFIG" -eq 1 ]; then
+  ui_print "- config.sh embedded from ZIP (fresh install or web download)."
+else
+  ui_print "- No config.sh yet: use the web builder or rename config.sh.example."
+fi
+
 _tg_progress_bar 22 "Verifying module.prop…"
 [ -f "$MODPATH/module.prop" ] || abort "! Install error: module.prop missing from ZIP."
 
@@ -75,5 +89,10 @@ _tg_progress_bar 88 "Checking shell…"
 command -v sh >/dev/null 2>&1 || abort "! Install error: sh not found in PATH."
 
 _tg_progress_bar 100 "Module checks complete."
-ui_print "- Ready (reboot after flashing)."
+if [ -f "$MODPATH/module.prop" ] && grep -q '^updateJson=' "$MODPATH/module.prop" 2>/dev/null; then
+  ui_print "- Stable build: you can update later in Magisk (module Update button)."
+else
+  ui_print "- Beta / personal build: no public Magisk OTA until a stable release."
+fi
+ui_print "- Reboot after install or update."
 ui_print ""

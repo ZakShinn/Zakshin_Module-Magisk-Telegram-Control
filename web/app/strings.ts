@@ -38,6 +38,8 @@ export const STR = {
     submitting: "Đang đóng gói…",
     hint:
       "Sau khi cài và khởi động lại: chỉ Chat ID đã nhập mới có quyền điều khiển bot.",
+    magiskUpdateHint:
+      "Bản stable: sau này mở Magisk → module → Cập nhật (không cần gỡ; giữ config.sh). Bản beta trên GitHub không bật OTA — tránh cập nhật nhầm.",
     testedDevicesNote:
       "Đã test và chạy tốt trên thiết bị Samsung Galaxy Z Flip4 và Samsung Galaxy Z Fold4. Một số thiết bị có thể không tương thích.",
     errNetwork: "Không tải được — kiểm tra mạng hoặc thử lại.",
@@ -90,6 +92,8 @@ export const STR = {
     submitting: "Building ZIP…",
     hint:
       "After install and reboot: only the Chat ID you entered can control the bot.",
+    magiskUpdateHint:
+      "Stable builds: later use Magisk → module → Update (no uninstall; keeps config.sh). Beta on GitHub has no public OTA.",
     testedDevicesNote:
       "Tested and working on Samsung Galaxy Z Flip4 and Samsung Galaxy Z Fold4. Some devices may be incompatible.",
     errNetwork: "Download failed — check your connection and retry.",

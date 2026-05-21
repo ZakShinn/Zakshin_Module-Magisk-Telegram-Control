@@ -35,6 +35,21 @@ _tg_progress_bar 8 "Khởi tạo kiểm tra…"
 [ -n "$MODPATH" ] || abort "! Lỗi cài đặt: biến MODPATH không có (installer không hợp lệ)."
 [ -d "$MODPATH" ] || abort "! Lỗi cài đặt: không thấy thư mục module tại MODPATH."
 
+# Cập nhật Magisk (cùng id): gói OTA không chứa config.sh → file cũ được giữ.
+TG_HAD_CONFIG=0
+[ -f "$MODPATH/config.sh" ] && TG_HAD_CONFIG=1
+ZIP_HAS_CONFIG=0
+if [ -n "$ZIPFILE" ] && [ -f "$ZIPFILE" ]; then
+  unzip -l "$ZIPFILE" 2>/dev/null | grep -qE '[[:space:]]config\.sh$' && ZIP_HAS_CONFIG=1
+fi
+if [ "$ZIP_HAS_CONFIG" -eq 0 ] && [ "$TG_HAD_CONFIG" -eq 1 ]; then
+  ui_print "- Cập nhật module: giữ nguyên config.sh (không cần gỡ bản cũ)."
+elif [ "$ZIP_HAS_CONFIG" -eq 1 ]; then
+  ui_print "- Đã nhúng config.sh từ ZIP (cài mới hoặc tải lại từ web)."
+else
+  ui_print "- Chưa có config.sh: tải ZIP từ web hoặc đổi tên config.sh.example."
+fi
+
 _tg_progress_bar 22 "Đang kiểm tra module.prop…"
 [ -f "$MODPATH/module.prop" ] || abort "! Lỗi cài đặt: thiếu module.prop trong ZIP."
 
@@ -75,5 +90,10 @@ _tg_progress_bar 88 "Đang kiểm tra đọc shell…"
 command -v sh >/dev/null 2>&1 || abort "! Lỗi cài đặt: không tìm thấy sh trong PATH."
 
 _tg_progress_bar 100 "Kiểm tra module hoàn tất."
-ui_print "- Chuẩn bị hoàn tất (khởi động lại sau khi flash xong)."
+if [ -f "$MODPATH/module.prop" ] && grep -q '^updateJson=' "$MODPATH/module.prop" 2>/dev/null; then
+  ui_print "- Bản stable: có thể cập nhật sau trong Magisk (nút Cập nhật module)."
+else
+  ui_print "- Bản beta / cá nhân: không OTA Magisk — chỉ cập nhật khi phát hành stable."
+fi
+ui_print "- Khởi động lại sau khi cài / cập nhật xong."
 ui_print ""

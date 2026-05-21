@@ -1,0 +1,15 @@
+{
+  "repository": "ZakShinn/Module-Magisk-Telegram-Control",
+  "branch": "main",
+  "activeChannel": "stable",
+  "stable": {
+    "otaEnabled": true,
+    "updateJsonFile": "ota/update-stable.json",
+    "releaseAssetName": "TelegramControl-ota.zip"
+  },
+  "beta": {
+    "otaEnabled": false,
+    "updateJsonFile": "ota/update-beta.json",
+    "releaseAssetName": "TelegramControl-ota-beta.zip"
+  }
+}
