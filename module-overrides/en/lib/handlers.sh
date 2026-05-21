@@ -266,8 +266,8 @@ dispatch_command() {
   TEXT="$1"
   CID="$2"
 
-  if [ -n "$CID" ]; then
-    TELEGRAM_CHAT_ID="$CID"
+  if ! tg_chat_allowed "$CID"; then
+    return 0
   fi
 
   case "$TEXT" in
@@ -284,10 +284,18 @@ dispatch_command() {
       handle_help
       ;;
     "/shutdown")
+      if ! tg_boot_grace_ok; then
+        send_code "⏳ Skipped <code>/shutdown</code> — device just booted (wait ~${TG_BOOT_GRACE_SEC}s uptime). Send again later."
+        return 0
+      fi
       notify_command_received "$TEXT"
       handle_shutdown
       ;;
     "/restart")
+      if ! tg_boot_grace_ok; then
+        send_code "⏳ Skipped <code>/restart</code> — device just booted (wait ~${TG_BOOT_GRACE_SEC}s uptime). Send again later."
+        return 0
+      fi
       notify_command_received "$TEXT"
       handle_restart
       ;;

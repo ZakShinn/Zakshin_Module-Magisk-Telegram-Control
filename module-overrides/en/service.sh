@@ -1,8 +1,28 @@
 #!/system/bin/sh
 # Telegram bot to control device
+#
+# Magisk late_start runs during boot animation. Exit immediately and run all work in a
+# background process — otherwise blocking on boot_completed/curl can trigger boot watchdog reboots.
 
-TELEGRAM_TOKEN="8298693641:AAEnMY9EUmO0MO6VL1RK6q7ZFrUGZjuI0Ak"
-TELEGRAM_CHAT_ID="1189961723"
+TG_SERVICE_LOG="/data/local/tmp/tg_device_bot.log"
+TG_SERVICE_PID_FILE="/data/local/tmp/tg_device_bot_service.pid"
+
+if [ -z "$TG_SERVICE_DAEMON" ]; then
+  export TG_SERVICE_DAEMON=1
+  nohup sh "$0" >>"$TG_SERVICE_LOG" 2>&1 &
+  exit 0
+fi
+
+if [ -f "$TG_SERVICE_PID_FILE" ]; then
+  _tg_old_pid="$(cat "$TG_SERVICE_PID_FILE" 2>/dev/null)"
+  if [ -n "$_tg_old_pid" ] && kill -0 "$_tg_old_pid" 2>/dev/null; then
+    exit 0
+  fi
+fi
+echo $$ >"$TG_SERVICE_PID_FILE"
+
+TELEGRAM_TOKEN=""
+TELEGRAM_CHAT_ID=""
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -39,6 +59,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BOT_OFFSET_FILE="/data/local/tmp/tg_device_bot_offset"
 LOOP_PID_FILE="/data/local/tmp/tg_device_bot_loop_pids"
 
+tg_wait_for_boot
+
 start_anydesk_auto_media_loop || true
 
 # /loop_on processes do not survive service reboot; clear old PID list to avoid killing wrong processes.
@@ -51,7 +73,10 @@ else
   OFFSET=0
 fi
 
-if [ -n "$TELEGRAM_CHAT_ID" ]; then
+tg_drain_pending_updates "$OFFSET" "$BOT_OFFSET_FILE"
+OFFSET="$(cat "$BOT_OFFSET_FILE" 2>/dev/null || echo "$OFFSET")"
+
+if [ -n "$TELEGRAM_CHAT_ID" ] && [ -n "$TELEGRAM_TOKEN" ]; then
   send_code "🤖 Telegram Device Bot started. Type /help to see commands."
 fi
 
@@ -85,4 +110,3 @@ while true; do
 
   [ -z "$RESP" ] && sleep 5
 done
-

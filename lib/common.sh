@@ -30,3 +30,48 @@ escape_html() {
 has_network() {
   curl -s --max-time 5 "${BOT_API}/getMe" | grep -q '"ok":true'
 }
+
+# Sau flash/reboot: bỏ qua lệnh tắt/khởi động lại cho đến khi uptime đủ (tránh reboot loop từ queue Telegram).
+TG_BOOT_GRACE_SEC="${TG_BOOT_GRACE_SEC:-180}"
+
+tg_uptime_sec() {
+  awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0
+}
+
+tg_boot_grace_ok() {
+  up="$(tg_uptime_sec)"
+  [ -n "$up" ] && [ "$up" -ge "$TG_BOOT_GRACE_SEC" ] 2>/dev/null
+}
+
+tg_chat_allowed() {
+  cid="$1"
+  [ -z "$TELEGRAM_CHAT_ID" ] && return 0
+  [ -z "$cid" ] && return 0
+  [ "$cid" = "$TELEGRAM_CHAT_ID" ]
+}
+
+# Xóa backlog getUpdates (chỉ cập nhật offset, không dispatch) — tránh /restart cũ chạy lúc boot.
+tg_drain_pending_updates() {
+  offset="${1:-0}"
+  offset_file="${2:-/data/local/tmp/tg_device_bot_offset}"
+  [ -z "$TELEGRAM_TOKEN" ] && return 0
+
+  while true; do
+    resp="$(curl -s --max-time 30 "${BOT_API}/getUpdates?timeout=0&offset=${offset}&limit=100")"
+    last="$(echo "$resp" | grep -o '"update_id":[0-9]*' | awk -F: '{print $2}' | sort -n | tail -n1)"
+    [ -z "$last" ] && break
+    offset=$((last + 1))
+    echo "$offset" > "$offset_file"
+  done
+}
+
+# Chỉ gọi từ tiến trình nền (service.sh đã nohup) — không chặn Magisk late_start.
+tg_wait_for_boot() {
+  i=0
+  while [ "$(getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
+    sleep 3
+    i=$((i + 1))
+    [ "$i" -ge 120 ] && break
+  done
+  sleep 5
+}

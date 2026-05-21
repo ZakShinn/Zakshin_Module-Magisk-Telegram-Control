@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { moduleVersionLine } from "../lib/module-meta";
 import { pick, type Lang } from "./strings";
 
 const DONATE_STK = "0968884946";
@@ -180,6 +181,9 @@ export default function HomePage() {
         <section className="hero" aria-labelledby="page-title">
           {t.heroEyebrow ? <p className="hero-eyebrow">{t.heroEyebrow}</p> : null}
           <h1 id="page-title">{t.title}</h1>
+          <p className="hero-version" aria-label={moduleVersionLine(lang)}>
+            {moduleVersionLine(lang)}
+          </p>
           <p className="lead">{t.lead}</p>
         </section>
 

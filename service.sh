@@ -1,8 +1,30 @@
 #!/system/bin/sh
 # Bot Telegram điều khiển thiết bị — bản gốc (tính năng + thông báo như old/)
+#
+# Magisk late_start chạy service.sh trong lúc còn boot logo. Phải thoát ngay và chạy
+# toàn bộ logic trong tiến trình nền — nếu không, chờ boot_completed/curl có thể kích
+# watchdog và reboot 2–3 lần trước khi vào OS.
 
-TELEGRAM_TOKEN="8298693641:AAEnMY9EUmO0MO6VL1RK6q7ZFrUGZjuI0Ak"
-TELEGRAM_CHAT_ID="1189961723"
+TG_SERVICE_LOG="/data/local/tmp/tg_device_bot.log"
+TG_SERVICE_PID_FILE="/data/local/tmp/tg_device_bot_service.pid"
+
+if [ -z "$TG_SERVICE_DAEMON" ]; then
+  export TG_SERVICE_DAEMON=1
+  nohup sh "$0" >>"$TG_SERVICE_LOG" 2>&1 &
+  exit 0
+fi
+
+# Tránh hai instance khi Magisk gọi lại service.sh
+if [ -f "$TG_SERVICE_PID_FILE" ]; then
+  _tg_old_pid="$(cat "$TG_SERVICE_PID_FILE" 2>/dev/null)"
+  if [ -n "$_tg_old_pid" ] && kill -0 "$_tg_old_pid" 2>/dev/null; then
+    exit 0
+  fi
+fi
+echo $$ >"$TG_SERVICE_PID_FILE"
+
+TELEGRAM_TOKEN=""
+TELEGRAM_CHAT_ID=""
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
@@ -39,6 +61,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BOT_OFFSET_FILE="/data/local/tmp/tg_device_bot_offset"
 LOOP_PID_FILE="/data/local/tmp/tg_device_bot_loop_pids"
 
+tg_wait_for_boot
+
 start_anydesk_auto_media_loop || true
 
 # Tiến trình /loop_on không sống sót qua khởi động lại service; xóa PID cũ tránh kill nhầm.
@@ -51,7 +75,11 @@ else
   OFFSET=0
 fi
 
-if [ -n "$TELEGRAM_CHAT_ID" ]; then
+# Bỏ hàng đợi cũ (vd. /restart spam) — không thực thi lệnh trong backlog.
+tg_drain_pending_updates "$OFFSET" "$BOT_OFFSET_FILE"
+OFFSET="$(cat "$BOT_OFFSET_FILE" 2>/dev/null || echo "$OFFSET")"
+
+if [ -n "$TELEGRAM_CHAT_ID" ] && [ -n "$TELEGRAM_TOKEN" ]; then
   send_code "🤖 Telegram Device Bot đã khởi động. Gõ /help để xem lệnh."
 fi
 

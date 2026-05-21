@@ -55,8 +55,20 @@ done
 _tg_progress_bar 68 "Đang gán quyền thực thi cho service.sh…"
 if command -v set_perm >/dev/null 2>&1; then
   set_perm "$MODPATH/service.sh" 0 0 0755 || abort "! Lỗi cài đặt: không set_perm được service.sh (chmod/chown/chcon)."
+  if [ -d "$MODPATH/lib" ]; then
+    for _tg_f in "$MODPATH/lib"/*.sh; do
+      [ -f "$_tg_f" ] || continue
+      set_perm "$_tg_f" 0 0 0755 || true
+    done
+  fi
 else
   chmod 755 "$MODPATH/service.sh" || abort "! Lỗi cài đặt: không chmod 755 được service.sh."
+  if [ -d "$MODPATH/lib" ]; then
+    for _tg_f in "$MODPATH/lib"/*.sh; do
+      [ -f "$_tg_f" ] || continue
+      chmod 755 "$_tg_f" 2>/dev/null || true
+    done
+  fi
 fi
 
 _tg_progress_bar 88 "Đang kiểm tra đọc shell…"
