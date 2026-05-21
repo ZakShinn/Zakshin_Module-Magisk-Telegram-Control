@@ -3,7 +3,6 @@ export const MODULE_META = {
   version: "4.21 Final",
   versionCode: 421,
   updatedAt: "2026-05-21",
-  magiskOtaEnabled: true,
 } as const;
 
 export type ModuleMeta = typeof MODULE_META;

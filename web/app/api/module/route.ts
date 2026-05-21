@@ -22,20 +22,29 @@ function hasBadControlChars(value: string): boolean {
   return /[\0-\x1F\x7F]/.test(value);
 }
 
-/** Thêm ngày build vào version; giữ versionCode + updateJson (OTA Magisk). */
+/** Stamp module.prop per ZIP so Magisk shows a unique build (version + versionCode). */
 function stampModulePropContent(raw: string): string {
+  const buildCode = Math.floor(Date.now() / 1000);
   const buildDate = new Date().toISOString().slice(0, 10);
-  const out = raw.split(/\r?\n/).map((line) => {
+  const lines = raw.split(/\r?\n/);
+  let baseVersion = "4.21 Final";
+  const out = lines.map((line) => {
+    if (line.startsWith("versionCode=")) {
+      return `versionCode=${buildCode}`;
+    }
     if (line.startsWith("version=")) {
-      const v = line
-        .slice("version=".length)
-        .trim()
-        .replace(/\s*\([^)]*\)\s*$/, "")
-        .trim();
-      return `version=${v} (${buildDate})`;
+      const v = line.slice("version=".length).trim();
+      baseVersion = v.replace(/\s*\([^)]*\)\s*$/, "").trim() || baseVersion;
+      return `version=${baseVersion} (${buildDate})`;
     }
     return line;
   });
+  if (!out.some((l) => l.startsWith("versionCode="))) {
+    out.push(`versionCode=${buildCode}`);
+  }
+  if (!out.some((l) => l.startsWith("version="))) {
+    out.push(`version=${baseVersion} (${buildDate})`);
+  }
   return out.join("\n").replace(/\n*$/, "\n");
 }
 
