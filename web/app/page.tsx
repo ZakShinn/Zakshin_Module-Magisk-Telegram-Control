@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { MODULE_META, moduleVersionLine } from "../lib/module-meta";
+import { moduleVersionLine } from "../lib/module-meta";
 import { pick, type Lang } from "./strings";
 
 const DONATE_STK = "0968884946";
@@ -183,15 +183,7 @@ export default function HomePage() {
           <h1 id="page-title">{t.title}</h1>
           <p className="hero-version" aria-label={moduleVersionLine(lang)}>
             {moduleVersionLine(lang)}
-            {MODULE_META.magiskOtaEnabled
-              ? lang === "vi"
-                ? " · OTA Magisk (stable)"
-                : " · Magisk OTA (stable)"
-              : lang === "vi"
-                ? " · không OTA công khai"
-                : " · no public OTA"}
           </p>
-          <p className="lead">{t.lead}</p>
         </section>
 
         <section className="builder-grid" aria-label={t.formSectionTitle}>
@@ -310,7 +302,6 @@ export default function HomePage() {
               ) : null}
 
               <div className="hint">{t.hint}</div>
-              <p className="muted-note ota-hint">{t.magiskUpdateHint}</p>
               <p className="muted-note">{t.testedDevicesNote}</p>
             </form>
           </article>
