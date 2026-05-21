@@ -114,13 +114,25 @@ function applyOverrides(lang, destRoot) {
   walk("");
 }
 
+function stripUpdateJsonFromModuleProp(raw) {
+  return raw
+    .split(/\r?\n/)
+    .filter((line) => !line.startsWith("updateJson="))
+    .join("\n")
+    .replace(/\n*$/, "\n");
+}
+
 function syncOne(destRoot, lang) {
   fs.rmSync(destRoot, { recursive: true, force: true });
   fs.mkdirSync(destRoot, { recursive: true });
 
-  for (const f of coreFiles) {
-    fs.copyFileSync(path.join(repoRoot, f), path.join(destRoot, f));
-  }
+  const propRaw = fs.readFileSync(modulePropPath, "utf8");
+  fs.writeFileSync(
+    path.join(destRoot, "module.prop"),
+    stripUpdateJsonFromModuleProp(propRaw),
+    "utf8",
+  );
+  fs.copyFileSync(path.join(repoRoot, "service.sh"), path.join(destRoot, "service.sh"));
 
   if (!fs.existsSync(libSrc)) {
     console.error("sync-module: missing ../lib from repo root");

@@ -22,30 +22,24 @@ function hasBadControlChars(value: string): boolean {
   return /[\0-\x1F\x7F]/.test(value);
 }
 
-/** Stamp module.prop per ZIP so Magisk shows a unique build (version + versionCode). */
+/** Thêm ngày build; giữ versionCode cố định (cài đè module cùng id). */
 function stampModulePropContent(raw: string): string {
-  const buildCode = Math.floor(Date.now() / 1000);
   const buildDate = new Date().toISOString().slice(0, 10);
-  const lines = raw.split(/\r?\n/);
-  let baseVersion = "4.21 Final";
-  const out = lines.map((line) => {
-    if (line.startsWith("versionCode=")) {
-      return `versionCode=${buildCode}`;
-    }
-    if (line.startsWith("version=")) {
-      const v = line.slice("version=".length).trim();
-      baseVersion = v.replace(/\s*\([^)]*\)\s*$/, "").trim() || baseVersion;
-      return `version=${baseVersion} (${buildDate})`;
-    }
-    return line;
-  });
-  if (!out.some((l) => l.startsWith("versionCode="))) {
-    out.push(`versionCode=${buildCode}`);
-  }
-  if (!out.some((l) => l.startsWith("version="))) {
-    out.push(`version=${baseVersion} (${buildDate})`);
-  }
-  return out.join("\n").replace(/\n*$/, "\n");
+  return raw
+    .split(/\r?\n/)
+    .map((line) => {
+      if (line.startsWith("version=")) {
+        const v = line
+          .slice("version=".length)
+          .trim()
+          .replace(/\s*\([^)]*\)\s*$/, "")
+          .trim();
+        return `version=${v} (${buildDate})`;
+      }
+      return line;
+    })
+    .join("\n")
+    .replace(/\n*$/, "\n");
 }
 
 function jsonBilingual(status: number, vi: string, en: string) {

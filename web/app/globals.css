@@ -275,6 +275,83 @@ body {
   line-height: 1.45;
 }
 
+@media (min-width: 901px) {
+  body {
+    padding: 18px 20px 24px;
+  }
+
+  .site-header {
+    margin-bottom: 14px;
+  }
+
+  .hero {
+    margin-bottom: 8px;
+  }
+
+  .hero h1 {
+    margin-bottom: 6px;
+    font-size: clamp(1.28rem, 2.2vw, 1.55rem);
+  }
+
+  .hero-version {
+    margin-bottom: 0;
+    font-size: 0.84rem;
+  }
+
+  .builder-grid {
+    gap: 14px;
+    align-items: start;
+  }
+
+  .card {
+    padding: 20px 22px;
+  }
+
+  .form-section-title {
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .field {
+    margin-bottom: 12px;
+  }
+
+  .hotspot-fieldset {
+    margin-bottom: 12px;
+    padding: 12px 14px 10px;
+  }
+
+  .hotspot-hint {
+    display: none;
+  }
+
+  .checkbox-field {
+    margin-bottom: 4px;
+  }
+
+  .hint {
+    margin-top: 10px;
+    font-size: 0.78rem;
+  }
+
+  .muted-note {
+    margin-top: 6px;
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+
+  .donate-card {
+    top: 14px;
+    padding: 18px;
+  }
+
+  .donate-qr,
+  .donate-logo-image {
+    width: 200px;
+    height: 200px;
+  }
+}
+
 .form-section-title {
   margin: 0 0 18px;
   padding-bottom: 14px;

@@ -184,7 +184,6 @@ export default function HomePage() {
           <p className="hero-version" aria-label={moduleVersionLine(lang)}>
             {moduleVersionLine(lang)}
           </p>
-          <p className="lead">{t.lead}</p>
         </section>
 
         <section className="builder-grid" aria-label={t.formSectionTitle}>

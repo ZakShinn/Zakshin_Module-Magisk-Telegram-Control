@@ -2,4 +2,6 @@ web/node_modules/
 web/.next/
 web/module-files-vi/
 web/module-files-en/
-TelegramControl_Mau
+node_modules/
+dist/
+TelegramControl_Mau/
