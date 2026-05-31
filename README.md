@@ -24,6 +24,8 @@ TelegramControl là module Magisk chạy nền qua `service.sh`, long‑polling 
 
 Sau khi cài, module chỉ nhận lệnh từ **Chat ID** bạn đã nhúng vào ZIP.
 
+Khi có internet sau khởi động, module tự gọi Telegram `setMyCommands` để cập nhật menu lệnh (gõ `/` trong chat bot).
+
 ### Cấu hình thủ công (không dùng web)
 
 - Copy `config.sh.example` → `config.sh`, đặt `TELEGRAM_TOKEN` và `TELEGRAM_CHAT_ID`.
@@ -87,6 +89,8 @@ TelegramControl is a Magisk module that runs in the background via `service.sh` 
 - Download `TelegramControl.zip`, flash in Magisk/KernelSU, then **reboot**.
 
 After install, the module only accepts commands from the **Chat ID** embedded in the ZIP.
+
+When online after boot, the module calls Telegram `setMyCommands` to refresh the bot command menu (type `/` in the bot chat).
 
 ### Manual configuration (without the website)
 

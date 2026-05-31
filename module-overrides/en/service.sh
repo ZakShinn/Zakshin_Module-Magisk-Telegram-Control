@@ -32,6 +32,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/common.sh"
 # shellcheck source=/dev/null
+. "${SCRIPT_DIR}/lib/bot_commands.sh"
+# shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/battery.sh"
 # shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/telephony.sh"
@@ -85,6 +87,7 @@ fi
 (
   for i in $(seq 1 120); do
     if has_network; then
+      tg_sync_my_commands
       handle_status_on_boot
       exit 0
     fi
