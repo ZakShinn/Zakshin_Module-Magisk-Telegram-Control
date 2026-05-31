@@ -23,6 +23,23 @@ send_code() {
   send_msg "$text"
 }
 
+send_photo() {
+  path="$1"
+  caption="${2:-}"
+  [ -z "$TELEGRAM_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ] && return 1
+  [ -f "$path" ] || return 1
+  if [ -n "$caption" ]; then
+    curl -s --max-time 60 -X POST "${BOT_API}/sendPhoto" \
+      -F "chat_id=${TELEGRAM_CHAT_ID}" \
+      -F "photo=@${path}" \
+      -F "caption=${caption}" >/dev/null 2>&1
+  else
+    curl -s --max-time 60 -X POST "${BOT_API}/sendPhoto" \
+      -F "chat_id=${TELEGRAM_CHAT_ID}" \
+      -F "photo=@${path}" >/dev/null 2>&1
+  fi
+}
+
 escape_html() {
   echo "$1" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g'
 }

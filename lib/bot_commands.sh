@@ -1,6 +1,7 @@
 # shellcheck shell=sh
 # Đồng bộ menu lệnh Telegram (setMyCommands) khi có internet.
 # TELEGRAM_TOKEN từ config.sh (service.sh nạp config trước khi . lib này).
+# Menu chính — lệnh /dev gõ tay hoặc xem qua /dev (không liệt kê hết trong menu).
 
 TG_BOT_COMMANDS_CACHE="/data/local/tmp/tg_bot_commands.cache"
 
@@ -9,10 +10,9 @@ tg_bot_commands_cache_key() {
   printf '%s\n%s' "$TELEGRAM_TOKEN" "$json"
 }
 
-# JSON array BotCommand — khớp lệnh trong handlers.sh (không có dấu /)
 tg_bot_commands_json() {
   cat <<'EOF'
-[{"command":"start","description":"Khởi động bot · danh sách lệnh"},{"command":"help","description":"Hiển thị danh sách lệnh"},{"command":"dev","description":"Thử nghiệm: wifi, bt, loop, sms_watch"},{"command":"status","description":"Thông tin cơ bản thiết bị"},{"command":"signal","description":"Báo cáo mạng: RAT, băng tần, RSRP"},{"command":"ip","description":"IPv4/IPv6 cục bộ và IP WAN"},{"command":"ping","description":"Ping (mặc định 1.1.1.1)"},{"command":"battery","description":"Thông tin pin hiện tại"},{"command":"datausage","description":"Dung lượng data đã dùng"},{"command":"sms","description":"SMS gần nhất trong inbox"},{"command":"rndis_on","description":"Bật USB tether (RNDIS)"},{"command":"rndis_off","description":"Tắt USB tether (RNDIS)"},{"command":"hotspot_on","description":"Bật hotspot Wi‑Fi"},{"command":"hotspot_off","description":"Tắt hotspot Wi‑Fi"},{"command":"shutdown","description":"Tắt máy"},{"command":"restart","description":"Khởi động lại"},{"command":"wifi_on","description":"Bật Wi‑Fi (thử nghiệm)"},{"command":"wifi_off","description":"Tắt Wi‑Fi (thử nghiệm)"},{"command":"bt_on","description":"Bật Bluetooth (thử nghiệm)"},{"command":"bt_off","description":"Tắt Bluetooth (thử nghiệm)"},{"command":"loop_on","description":"Lặp lệnh mỗi N phút"},{"command":"loop_off","description":"Dừng vòng lặp nền (/loop_on)"}]
+[{"command":"start","description":"Khởi động bot · danh sách lệnh"},{"command":"help","description":"Hiển thị danh sách lệnh"},{"command":"dev","description":"Lệnh nâng cao: mạng, màn hình, app, USB…"},{"command":"status","description":"Thông tin cơ bản thiết bị"},{"command":"signal","description":"Báo cáo mạng: RAT, băng tần, RSRP"},{"command":"ip","description":"IPv4/IPv6 cục bộ và IP WAN"},{"command":"ping","description":"Ping (mặc định 1.1.1.1)"},{"command":"battery","description":"Thông tin pin hiện tại"},{"command":"datausage","description":"Dung lượng data đã dùng"},{"command":"sms","description":"SMS gần nhất trong inbox"},{"command":"shutdown","description":"Tắt máy"},{"command":"restart","description":"Khởi động lại"}]
 EOF
 }
 

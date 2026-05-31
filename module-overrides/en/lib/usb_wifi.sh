@@ -7,6 +7,106 @@ get_rndis_state_simple() {
   echo "$usb_state $usb_cfg" | grep -qi 'rndis' && echo "on" || echo "off"
 }
 
+get_usb_lan_state_simple() {
+  usb_state="$(getprop_safe sys.usb.state)"
+  usb_cfg="$(getprop_safe sys.usb.config)"
+  if echo "$usb_state $usb_cfg" | grep -qiE 'rndis|ncm'; then
+    echo "on"
+    return
+  fi
+  if dumpsys connectivity 2>/dev/null | grep -qiE 'USB.*tether|tethering.*usb|Tethered.*(rndis|ncm)'; then
+    echo "on"
+    return
+  fi
+  echo "off"
+}
+
+_usb_lan_tether_service() {
+  enable="$1"
+  ok=0
+  for code in 34 33 30 31; do
+    if service call connectivity "$code" i32 "$enable" >/dev/null 2>&1; then
+      ok=1
+      break
+    fi
+  done
+  [ "$ok" = "1" ]
+}
+
+_usb_lan_connectivity_cmd() {
+  action="$1"
+  command -v cmd >/dev/null 2>&1 || return 1
+  case "$action" in
+    on)
+      cmd connectivity tether usb enable 2>/dev/null \
+        || cmd connectivity tethering enable usb 2>/dev/null \
+        || cmd connectivity start-tethering usb 2>/dev/null \
+        || true
+      ;;
+    off)
+      cmd connectivity tether usb disable 2>/dev/null \
+        || cmd connectivity tethering disable usb 2>/dev/null \
+        || cmd connectivity stop-tethering usb 2>/dev/null \
+        || true
+      ;;
+  esac
+}
+
+usb_lan_on_apply() {
+  _usb_lan_tether_service 1 || true
+  _usb_lan_connectivity_cmd on || true
+
+  if command -v svc >/dev/null 2>&1; then
+    svc usb setFunctions ncm,adb 2>/dev/null || svc usb setFunctions ncm 2>/dev/null || true
+  fi
+  setprop sys.usb.config ncm,adb 2>/dev/null || setprop sys.usb.config ncm 2>/dev/null || true
+  setprop sys.usb.configfs 1 2>/dev/null || true
+
+  sleep 2
+  if [ "$(get_usb_lan_state_simple)" != "on" ]; then
+    rndis_on_apply
+    sleep 1
+  fi
+
+  echo 1 > /proc/sys/net/ipv4/ip_forward 2>/dev/null || true
+}
+
+usb_lan_off_apply() {
+  _usb_lan_tether_service 0 || true
+  _usb_lan_connectivity_cmd off || true
+
+  if command -v svc >/dev/null 2>&1; then
+    svc usb setFunctions mtp,adb 2>/dev/null || svc usb setFunctions mtp 2>/dev/null || true
+  fi
+  setprop sys.usb.config mtp,adb 2>/dev/null || setprop sys.usb.config mtp 2>/dev/null || true
+  setprop sys.usb.configfs 1 2>/dev/null || true
+}
+
+handle_usb_lan_on() {
+  usb_lan_on_apply
+  sleep 1
+  mode="$(getprop_safe sys.usb.config)"
+  if [ "$(get_usb_lan_state_simple)" = "on" ]; then
+    send_code "✅ <b>USB‑C → LAN</b> internet sharing: <b>ON</b>
+USB mode: <code>$(escape_html "$mode")</code>
+<i>Plug the Type‑C to LAN adapter before or after enabling, depending on your device.</i>"
+  else
+    send_code "❌ Failed to enable USB‑C → LAN sharing.
+Try: plug in the adapter, enable <b>USB tethering</b> in Settings, or a ROM with NCM/RNDIS support."
+  fi
+}
+
+handle_usb_lan_off() {
+  usb_lan_off_apply
+  sleep 1
+  if [ "$(get_usb_lan_state_simple)" = "off" ]; then
+    send_code "✅ USB‑C → LAN internet sharing is OFF."
+  else
+    mode="$(getprop_safe sys.usb.config)"
+    send_code "⚠️ Stop command sent; USB still: <code>$(escape_html "$mode")</code>. Unplug or disable tethering in Settings if needed."
+  fi
+}
+
 get_hotspot_state_simple() {
   iface="$(dumpsys wifi 2>/dev/null | sed -n 's/.*SoftApManager{id=[^}]* iface=\([^ ]*\) .*/\1/p' | head -n1)"
   if [ -n "$iface" ] && ip link show "$iface" 2>/dev/null | grep -q "state UP"; then

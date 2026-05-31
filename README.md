@@ -33,21 +33,19 @@ Khi có internet sau khởi động, module tự gọi Telegram `setMyCommands` 
 
 ### Lệnh Telegram (tóm tắt)
 
-- `/help`, `/start`: danh sách lệnh
-- `/status`: trạng thái hệ thống (chạy nền)
-- `/signal`: báo cáo mạng di động (RAT/band/RSRP/RSRQ/SINR/roaming)
-- `/ip`: IP local + public
-- `/ping [target]`: ping (mặc định 1.1.1.1)
-- `/battery`: pin
-- `/datausage`: thống kê lưu lượng theo interface (realtime)
-- `/sms [count]`: đọc SMS inbox (cần quyền `READ_SMS` / tùy ROM)
-- `/dev`: thử nghiệm — `/sms_watch_on` báo SMS mới (poll nền)
-- `/loop_on <phút> <lệnh>` / `/loop_off`: chạy lặp theo phút
-- `/rndis_on`, `/rndis_off`: USB tether (RNDIS)
-- `/hotspot_on [SSID PASS]`, `/hotspot_off`: hotspot
-- `/wifi_on`, `/wifi_off`: Wi‑Fi
-- `/bt_on`, `/bt_off`: Bluetooth
-- `/shutdown`, `/restart`: tắt máy / reboot (không spam)
+**Chính** (`/help`):
+
+- `/status`, `/signal`, `/ip`, `/ping`, `/battery`, `/datausage`
+- `/sms [count]`: đọc SMS inbox
+- `/shutdown`, `/restart` (không spam)
+
+**Nâng cao** (`/dev` — gõ `/dev`, 2 trang lệnh, ~60+ lệnh shell):
+
+- Mạng, USB tether, hotspot, Wi‑Fi scan, DNS, interface
+- Màn hình: screenshot, khóa, xoay, độ sáng, chuông, animation
+- Hệ thống: CPU, nhiệt, logcat, dmesg, device info, recovery/bootloader
+- App: packages, pkg, open/kill/clear, gõ text (`input`)
+- SMS watch, loop, sync, GPS, DND, …
 
 
 ### Bảo mật
@@ -100,21 +98,19 @@ When online after boot, the module calls Telegram `setMyCommands` to refresh the
 
 ### Telegram commands (summary)
 
-- `/help`, `/start`: command list
-- `/status`: system status snapshot (runs in background)
-- `/signal`: cellular report (RAT/band/RSRP/RSRQ/SINR/roaming)
-- `/ip`: local + public IP
-- `/ping [target]`: ping (default 1.1.1.1)
-- `/battery`: battery info
-- `/datausage`: realtime interface totals
-- `/sms [count]`: read inbox SMS (requires `READ_SMS` / ROM dependent)
-- `/dev`: experimental — `/sms_watch_on` notifies new SMS (background poll)
-- `/loop_on <minutes> <command>` / `/loop_off`: scheduled loop
-- `/rndis_on`, `/rndis_off`: USB tether (RNDIS)
-- `/hotspot_on [SSID PASS]`, `/hotspot_off`: hotspot
-- `/wifi_on`, `/wifi_off`: Wi‑Fi
-- `/bt_on`, `/bt_off`: Bluetooth
-- `/shutdown`, `/restart`: power off / reboot (do not spam)
+**Main** (`/help`):
+
+- `/status`, `/signal`, `/ip`, `/ping`, `/battery`, `/datausage`
+- `/sms [count]`: read inbox SMS
+- `/shutdown`, `/restart` (do not spam)
+
+**Advanced** (`/dev` — two help messages, 60+ shell commands):
+
+- Network, USB tether, hotspot, Wi‑Fi scan, DNS, interfaces
+- Display: screenshot, lock, rotation, brightness, ringer, animations
+- System: CPU, thermal, logcat, dmesg, device info, recovery/bootloader
+- Apps: packages, pkg info, open/kill/clear, `input` text
+- SMS watch, loops, sync, GPS, DND, …
 
 
 ### Security

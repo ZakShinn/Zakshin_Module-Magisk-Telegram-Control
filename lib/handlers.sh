@@ -6,7 +6,7 @@ handle_help() {
 <b>Lệnh hỗ trợ:</b>
 
 /help                 - Hiển thị danh sách lệnh
-/dev                   - Lệnh thử nghiệm (wifi/bt/loop)
+/dev                   - Lệnh nâng cao (mạng, màn hình, app, USB, …)
 /status             - Hiển thị thông tin cơ bản của thiết bị
 /signal              - Báo cáo mạng: RAT, băng tần, RSRP/RSRQ/SINR, roaming
 /ip                      - IPv4 / IPv6 cục bộ + WAN public
@@ -14,11 +14,6 @@ handle_help() {
 /battery           - Thông tin pin hiện tại
 /datausage     - Dung lượng data đã dùng
 /sms [số]          - SMS gần nhất trong inbox (mặc định 1; ví dụ <code>/sms 5</code>)
-
-/rndis_on        - Bật RNDIS (USB tether)
-/rndis_off        - Tắt RNDIS (USB tether)
-/hotspot_on [SSID MậtKhẩu]  - Bật hotspot (mặc định từ config)
-/hotspot_off  - Tắt Hotspot (Phát wifi)
 
 /shutdown     - Tắt máy
 /restart            - Khởi động lại
@@ -29,24 +24,7 @@ EOF
 }
 
 handle_dev() {
-  msg="$(cat <<'EOF'
-<b>Lệnh thử nghiệm (/dev):</b>
-<i>Các tính năng đang thử nghiệm, có thể đổi hành vi hoặc không hoạt động tùy ROM/quyền.</i>
-
-/wifi_on       - Bật Wi‑Fi
-/wifi_off      - Tắt Wi‑Fi
-/bt_on         - Bật Bluetooth
-/bt_off        - Tắt Bluetooth
-
-/loop_on &lt;phút&gt; &lt;lệnh&gt;  - Lặp: mỗi N phút chạy lệnh một lần
-/loop_off       - Dừng mọi vòng lặp nền (/loop_on)
-
-/sms_watch_on [giây] - Báo SMS mới khi nhận (poll, mặc định 8s)
-/sms_watch_off      - Dừng báo SMS mới
-
-EOF
-)"
-  send_code "$msg"
+  dev_commands_send_help
 }
 
 handle_status() {
@@ -342,6 +320,14 @@ dispatch_command() {
       rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
       handle_sms "$rest"
       ;;
+    "/usb_lan_on")
+      notify_command_received "$TEXT"
+      handle_usb_lan_on
+      ;;
+    "/usb_lan_off")
+      notify_command_received "$TEXT"
+      handle_usb_lan_off
+      ;;
     "/rndis_on")
       notify_command_received "$TEXT"
       handle_rndis_on
@@ -390,9 +376,285 @@ dispatch_command() {
       rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
       handle_loop_on "$rest" "$CID"
       ;;
+    "/airplane_on")
+      notify_command_received "$TEXT"
+      handle_airplane_on
+      ;;
+    "/airplane_off")
+      notify_command_received "$TEXT"
+      handle_airplane_off
+      ;;
+    "/data_on")
+      notify_command_received "$TEXT"
+      handle_data_on
+      ;;
+    "/data_off")
+      notify_command_received "$TEXT"
+      handle_data_off
+      ;;
+    "/nfc_on")
+      notify_command_received "$TEXT"
+      handle_nfc_on
+      ;;
+    "/nfc_off")
+      notify_command_received "$TEXT"
+      handle_nfc_off
+      ;;
+    "/wifi_info")
+      notify_command_received "$TEXT"
+      handle_wifi_info
+      ;;
+    "/torch_on")
+      notify_command_received "$TEXT"
+      handle_torch_on
+      ;;
+    "/torch_off")
+      notify_command_received "$TEXT"
+      handle_torch_off
+      ;;
+    "/screen_on")
+      notify_command_received "$TEXT"
+      handle_screen_on
+      ;;
+    "/screen_off")
+      notify_command_received "$TEXT"
+      handle_screen_off
+      ;;
+    /brightness*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/brightness}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_brightness "$rest"
+      ;;
+    /volume*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/volume}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_volume "$rest"
+      ;;
+    "/storage")
+      notify_command_received "$TEXT"
+      handle_storage
+      ;;
+    "/mem")
+      notify_command_received "$TEXT"
+      handle_mem
+      ;;
+    "/uptime")
+      notify_command_received "$TEXT"
+      handle_uptime
+      ;;
+    "/reboot_recovery")
+      notify_command_received "$TEXT"
+      handle_reboot_recovery
+      ;;
+    "/reboot_bootloader")
+      notify_command_received "$TEXT"
+      handle_reboot_bootloader
+      ;;
+    /prop*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/prop}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_prop "$rest"
+      ;;
+    /kill*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/kill}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_kill "$rest"
+      ;;
+    /open*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/open}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_open "$rest"
+      ;;
+    "/sync_on")
+      notify_command_received "$TEXT"
+      handle_sync_on
+      ;;
+    "/sync_off")
+      notify_command_received "$TEXT"
+      handle_sync_off
+      ;;
+    "/location_on")
+      notify_command_received "$TEXT"
+      handle_location_on
+      ;;
+    "/location_off")
+      notify_command_received "$TEXT"
+      handle_location_off
+      ;;
+    "/dnd_on")
+      notify_command_received "$TEXT"
+      handle_dnd_on
+      ;;
+    "/dnd_off")
+      notify_command_received "$TEXT"
+      handle_dnd_off
+      ;;
+    "/stayon_on")
+      notify_command_received "$TEXT"
+      handle_stayon_on
+      ;;
+    "/stayon_off")
+      notify_command_received "$TEXT"
+      handle_stayon_off
+      ;;
+    "/lock")
+      notify_command_received "$TEXT"
+      handle_lock
+      ;;
+    "/rotate_on")
+      notify_command_received "$TEXT"
+      handle_rotate_on
+      ;;
+    "/rotate_off")
+      notify_command_received "$TEXT"
+      handle_rotate_off
+      ;;
+    "/ringer_normal")
+      notify_command_received "$TEXT"
+      handle_ringer_normal
+      ;;
+    "/ringer_silent")
+      notify_command_received "$TEXT"
+      handle_ringer_silent
+      ;;
+    "/ringer_vibrate")
+      notify_command_received "$TEXT"
+      handle_ringer_vibrate
+      ;;
+    "/vol_up")
+      notify_command_received "$TEXT"
+      handle_vol_up
+      ;;
+    "/vol_down")
+      notify_command_received "$TEXT"
+      handle_vol_down
+      ;;
+    "/media_play")
+      notify_command_received "$TEXT"
+      handle_media_play
+      ;;
+    "/brightness_auto")
+      notify_command_received "$TEXT"
+      handle_brightness_auto
+      ;;
+    "/brightness_manual")
+      notify_command_received "$TEXT"
+      handle_brightness_manual
+      ;;
+    "/anim_off")
+      notify_command_received "$TEXT"
+      handle_anim_off
+      ;;
+    "/anim_on")
+      notify_command_received "$TEXT"
+      handle_anim_on
+      ;;
+    "/screenshot")
+      notify_command_received "$TEXT"
+      handle_screenshot
+      ;;
+    "/wifi_scan")
+      notify_command_received "$TEXT"
+      handle_wifi_scan
+      ;;
+    "/bt_info")
+      notify_command_received "$TEXT"
+      handle_bt_info
+      ;;
+    "/tether_status")
+      notify_command_received "$TEXT"
+      handle_tether_status
+      ;;
+    "/usb_status")
+      notify_command_received "$TEXT"
+      handle_usb_status
+      ;;
+    "/dns")
+      notify_command_received "$TEXT"
+      handle_dns
+      ;;
+    "/net_if")
+      notify_command_received "$TEXT"
+      handle_net_if
+      ;;
+    "/hotspot_status")
+      notify_command_received "$TEXT"
+      handle_hotspot_status
+      ;;
+    "/device")
+      notify_command_received "$TEXT"
+      handle_device
+      ;;
+    "/cpu")
+      notify_command_received "$TEXT"
+      handle_cpu
+      ;;
+    "/temp")
+      notify_command_received "$TEXT"
+      handle_temp
+      ;;
+    "/datetime")
+      notify_command_received "$TEXT"
+      handle_datetime
+      ;;
+    "/rootid")
+      notify_command_received "$TEXT"
+      handle_rootid
+      ;;
+    "/logcat_clear")
+      notify_command_received "$TEXT"
+      handle_logcat_clear
+      ;;
+    /logcat*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/logcat}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_logcat "$rest"
+      ;;
+    "/dmesg")
+      notify_command_received "$TEXT"
+      handle_dmesg
+      ;;
+    /packages*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/packages}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_packages "$rest"
+      ;;
+    /pkg*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/pkg}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_pkg "$rest"
+      ;;
+    /clear*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/clear}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_clear "$rest"
+      ;;
+    /input*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/input}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_input_text "$rest"
+      ;;
+    "/unknown_sources_on")
+      notify_command_received "$TEXT"
+      handle_unknown_sources_on
+      ;;
+    "/unknown_sources_off")
+      notify_command_received "$TEXT"
+      handle_unknown_sources_off
+      ;;
     ""|*[![:print:]]*) ;;
     *)
-      send_code "✅ Đã nhận:\n<code>$(escape_html "$TEXT")</code>\n❌ Lệnh không hợp lệ. Gõ /help để xem danh sách lệnh."
+      send_code "✅ Đã nhận:\n<code>$(escape_html "$TEXT")</code>\n❌ Lệnh không hợp lệ. Gõ /help hoặc /dev."
       ;;
   esac
 }

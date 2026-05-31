@@ -48,9 +48,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/check_sms_watch.sh"
 # shellcheck source=/dev/null
-. "${SCRIPT_DIR}/lib/handlers.sh"
-# shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/status.sh"
+# shellcheck source=/dev/null
+. "${SCRIPT_DIR}/lib/dev_cmds.sh"
+# shellcheck source=/dev/null
+. "${SCRIPT_DIR}/lib/handlers.sh"
 # shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/loop.sh"
 # shellcheck source=/dev/null
