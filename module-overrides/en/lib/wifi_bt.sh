@@ -2,7 +2,6 @@
 # Toggle Wi‑Fi and Bluetooth via svc/cmd (depends on ROM).
 
 handle_wifi_on() {
-  send_code "📶 Turning Wi‑Fi on..."
   if svc wifi enable 2>/dev/null || cmd wifi set-wifi-enabled enabled 2>/dev/null; then
     send_code "✅ Wi‑Fi is ON."
   else
@@ -11,7 +10,6 @@ handle_wifi_on() {
 }
 
 handle_wifi_off() {
-  send_code "📶 Turning Wi‑Fi off..."
   if svc wifi disable 2>/dev/null || cmd wifi set-wifi-enabled disabled 2>/dev/null; then
     send_code "✅ Wi‑Fi is OFF."
   else
@@ -20,7 +18,6 @@ handle_wifi_off() {
 }
 
 handle_bt_on() {
-  send_code "📳 Turning Bluetooth on..."
   if svc bluetooth enable 2>/dev/null || cmd bluetooth_manager enable 2>/dev/null; then
     send_code "✅ Bluetooth is ON."
   else
@@ -29,7 +26,6 @@ handle_bt_on() {
 }
 
 handle_bt_off() {
-  send_code "📳 Turning Bluetooth off..."
   if svc bluetooth disable 2>/dev/null || cmd bluetooth_manager disable 2>/dev/null; then
     send_code "✅ Bluetooth is OFF."
   else

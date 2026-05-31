@@ -122,9 +122,7 @@ ${band_block}
 <b>Đánh giá</b>: ${qual_esc} · ${bars_esc}
 
 ${meter_block}${extra_physics}<b>Chuyển vùng</b>
-${roam_esc}
-
-<i>Tham khảo: modem, antenna và ROM quyết định độ chính xác.</i>"
+${roam_esc}"
 
   send_code "$msg"
 }
@@ -210,9 +208,7 @@ ${v6_sec}"
 ${local_block}
 
 <b>WAN · Public</b>
-${wan_block}
-
-<i>Public qua HTTP (ipify / ifconfig.me / ipinfo). Bản ghi IPv6 global có thể trùng hoặc khác địa chỉ WAN tùy nhà mạng.</i>"
+${wan_block}"
 
   send_code "$msg"
 }

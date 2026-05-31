@@ -25,7 +25,6 @@ rndis_on_apply() {
 }
 
 handle_rndis_on() {
-  send_code "🔌 Enabling RNDIS (USB tether)..."
   rndis_on_apply
   sleep 1
   if [ "$(get_rndis_state_simple)" = "on" ]; then
@@ -34,7 +33,6 @@ handle_rndis_on() {
 }
 
 handle_rndis_off() {
-  send_code "🔌 Disabling RNDIS (USB tether)..."
   if command -v svc >/dev/null 2>&1; then
     svc usb setFunctions mtp,adb 2>/dev/null || svc usb setFunctions mtp 2>/dev/null || true
   fi

@@ -182,7 +182,6 @@ _build_usage_summary_html() {
   SUMMARY="${SUMMARY}📶 <b>Mobile</b> <i>(rmnet*)</i>\n └ RX <code>${M_RX_H}</code> · TX <code>${M_TX_H}</code>\n\n"
   SUMMARY="${SUMMARY}🔌 <b>RNDIS</b> <i>(rndis*)</i>\n └ RX <code>${R_RX_H}</code> · TX <code>${R_TX_H}</code>\n\n"
   SUMMARY="${SUMMARY}📡 <b>Hotspot</b> <i>(p2p0/wlan1…)</i>\n └ RX <code>${HS_RX_H}</code> · TX <code>${HS_TX_H}</code>\n"
-  SUMMARY="${SUMMARY}\n<i>Ưu tiên <code>dumpsys netstats</code> (rồi <code>/proc/net/dev</code> / sysfs). Là lưu lượng theo giao diện, tích lũy theo thời gian — không trùng với màn “dung lượng dữ liệu” trong Cài đặt.</i>\n"
 
   if [ "${DEBUG:-0}" = "1" ] && [ -r /proc/net/dev ]; then
     debug_list=$(awk '

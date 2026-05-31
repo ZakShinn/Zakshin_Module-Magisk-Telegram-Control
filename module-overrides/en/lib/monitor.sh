@@ -31,9 +31,7 @@ handle_monitor_changes() {
     fi
 
     if [ "$cur_hotspot" != "$last_hotspot" ]; then
-      if [ "$cur_hotspot" = "on" ]; then
-        send_code "📡 Hotspot: <b>ON</b>"
-      elif [ "$cur_hotspot" = "off" ]; then
+      if [ "$cur_hotspot" = "off" ]; then
         # /hotspot_off already sent "Hotspot is OFF." after verification — avoid duplicates.
         if [ -f /data/local/tmp/tg_hotspot_off_by_cmd ]; then
           rm -f /data/local/tmp/tg_hotspot_off_by_cmd 2>/dev/null || true

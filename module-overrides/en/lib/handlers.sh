@@ -122,9 +122,7 @@ ${band_block}
 <b>Rating</b>: ${qual_esc} · ${bars_esc}
 
 ${meter_block}${extra_physics}<b>Roaming</b>
-${roam_esc}
-
-<i>Note: modem/antenna/ROM affect accuracy.</i>"
+${roam_esc}"
 
   send_code "$msg"
 }
@@ -210,9 +208,7 @@ ${v6_sec}"
 ${local_block}
 
 <b>WAN · Public</b>
-${wan_block}
-
-<i>Public IP via HTTP (ipify / ifconfig.me / ipinfo). IPv6 global may match or differ depending on carrier.</i>"
+${wan_block}"
 
   send_code "$msg"
 }
