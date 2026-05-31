@@ -41,6 +41,7 @@ Khi có internet sau khởi động, module tự gọi Telegram `setMyCommands` 
 - `/battery`: pin
 - `/datausage`: thống kê lưu lượng theo interface (realtime)
 - `/sms [count]`: đọc SMS inbox (cần quyền `READ_SMS` / tùy ROM)
+- `/dev`: thử nghiệm — `/sms_watch_on` báo SMS mới (poll nền)
 - `/loop_on <phút> <lệnh>` / `/loop_off`: chạy lặp theo phút
 - `/rndis_on`, `/rndis_off`: USB tether (RNDIS)
 - `/hotspot_on [SSID PASS]`, `/hotspot_off`: hotspot
@@ -107,6 +108,7 @@ When online after boot, the module calls Telegram `setMyCommands` to refresh the
 - `/battery`: battery info
 - `/datausage`: realtime interface totals
 - `/sms [count]`: read inbox SMS (requires `READ_SMS` / ROM dependent)
+- `/dev`: experimental — `/sms_watch_on` notifies new SMS (background poll)
 - `/loop_on <minutes> <command>` / `/loop_off`: scheduled loop
 - `/rndis_on`, `/rndis_off`: USB tether (RNDIS)
 - `/hotspot_on [SSID PASS]`, `/hotspot_off`: hotspot

@@ -41,6 +41,9 @@ handle_dev() {
 /loop_on &lt;minutes&gt; &lt;command&gt;  - Repeat command every N minutes
 /loop_off                      - Stop all background loops
 
+/sms_watch_on [sec]     - Notify new SMS when received (poll, default 8s)
+/sms_watch_off          - Stop new-SMS notifications
+
 EOF
 )"
   send_code "$msg"
@@ -320,6 +323,16 @@ dispatch_command() {
     "/datausage")
       notify_command_received "$TEXT"
       handle_datausage
+      ;;
+    "/sms_watch_off")
+      notify_command_received "$TEXT"
+      handle_sms_watch_off
+      ;;
+    /sms_watch_on*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/sms_watch_on}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_sms_watch_on "$rest" "$CID"
       ;;
     /sms*)
       notify_command_received "$TEXT"

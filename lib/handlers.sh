@@ -41,6 +41,9 @@ handle_dev() {
 /loop_on &lt;phút&gt; &lt;lệnh&gt;  - Lặp: mỗi N phút chạy lệnh một lần
 /loop_off       - Dừng mọi vòng lặp nền (/loop_on)
 
+/sms_watch_on [giây] - Báo SMS mới khi nhận (poll, mặc định 8s)
+/sms_watch_off      - Dừng báo SMS mới
+
 EOF
 )"
   send_code "$msg"
@@ -322,6 +325,16 @@ dispatch_command() {
     "/datausage")
       notify_command_received "$TEXT"
       handle_datausage
+      ;;
+    "/sms_watch_off")
+      notify_command_received "$TEXT"
+      handle_sms_watch_off
+      ;;
+    /sms_watch_on*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/sms_watch_on}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_sms_watch_on "$rest" "$CID"
       ;;
     /sms*)
       notify_command_received "$TEXT"
