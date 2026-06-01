@@ -67,6 +67,35 @@ tg_chat_allowed() {
   [ "$cid" = "$TELEGRAM_CHAT_ID" ]
 }
 
+# Telegram menu: /sentsms@MyBot 888 hi → /sentsms 888 hi
+tg_normalize_telegram_command() {
+  printf '%s' "$1" | sed 's/^\(\/[^ @]*\)@[^ @]*/\1/'
+}
+
+# Tránh case *[!0-9]* — một số ROM /system/bin/sh báo syntax error.
+tg_is_uint() {
+  echo "$1" | grep -q '^[0-9][0-9]*$'
+}
+
+tg_uint_or() {
+  if tg_is_uint "$1"; then
+    printf '%s' "$1"
+  else
+    printf '%s' "$2"
+  fi
+}
+
+# Trích text tin nhắn cuối từ JSON getUpdates (tránh lấy nhầm trường khác).
+tg_extract_update_text() {
+  resp="$1"
+  echo "$resp" | grep -o '"text":"[^"]*"' | sed 's/^"text":"//;s/"$//' | tail -n1
+}
+
+tg_extract_update_chat_id() {
+  resp="$1"
+  echo "$resp" | grep -o '"chat":{"id":[-0-9]*' | sed 's/.*"id"://' | tail -n1
+}
+
 # Xóa backlog getUpdates (chỉ cập nhật offset, không dispatch) — tránh /restart cũ chạy lúc boot.
 tg_drain_pending_updates() {
   offset="${1:-0}"

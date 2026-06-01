@@ -38,8 +38,15 @@ _check_sms_watch_query_raw_limit() {
   lim="$1"
   _save="$SMS_SHOW_COUNT"
   SMS_SHOW_COUNT="$lim"
-  sms_query_inbox_raw
+  raw="$(sms_query_inbox_raw)"
   SMS_SHOW_COUNT="$_save"
+  if printf '%s' "$raw" | grep -q '^Row:'; then
+    printf '%s' "$raw"
+    return 0
+  fi
+  bin="$(_sms_content_bin)"
+  [ -z "$bin" ] && return 1
+  _sms_content_query_inbox "$bin" "$lim"
 }
 
 _check_sms_watch_send_one_row() {
@@ -224,13 +231,27 @@ start_sms_inbox_watch_auto() {
     rm -f "$CHECK_SMS_WATCH_PID_FILE" 2>/dev/null || true
   fi
 
+  _check_sms_watch_start_loop ""
+  return $?
+}
+
+_check_sms_watch_start_loop() {
+  _cid="$1"
+  export CHECK_SMS_WATCH_INTERVAL="${SMS_WATCH_INTERVAL:-$CHECK_SMS_WATCH_INTERVAL}"
   (
-    export CHECK_SMS_WATCH_INTERVAL="${SMS_WATCH_INTERVAL:-$CHECK_SMS_WATCH_INTERVAL}"
-    _check_sms_watch_loop ""
+    export CHECK_SMS_WATCH_INTERVAL
+    _check_sms_watch_loop "$_cid"
   ) >>"$CHECK_SMS_WATCH_LOG" 2>&1 &
   watch_pid=$!
   echo "$watch_pid" >"$CHECK_SMS_WATCH_PID_FILE"
-  _check_sms_watch_log "sms_watch: auto-started pid=$watch_pid interval=$CHECK_SMS_WATCH_INTERVAL"
+  _check_sms_watch_log "sms_watch: started pid=$watch_pid interval=$CHECK_SMS_WATCH_INTERVAL"
+  sleep 1
+  if kill -0 "$watch_pid" 2>/dev/null; then
+    return 0
+  fi
+  rm -f "$CHECK_SMS_WATCH_PID_FILE" 2>/dev/null || true
+  _check_sms_watch_log "sms_watch: process died immediately after start"
+  return 1
 }
 
 handle_sms_watch_on() {
@@ -258,15 +279,14 @@ handle_sms_watch_on() {
   rm -f "$CHECK_SMS_WATCH_DISABLED_FILE" 2>/dev/null || true
   _check_sms_watch_stop_pid
 
-  (
-    export CHECK_SMS_WATCH_INTERVAL="${SMS_WATCH_INTERVAL:-$CHECK_SMS_WATCH_INTERVAL}"
-    _check_sms_watch_loop "$CID"
-  ) >>"$CHECK_SMS_WATCH_LOG" 2>&1 &
-  watch_pid=$!
-  echo "$watch_pid" >"$CHECK_SMS_WATCH_PID_FILE"
-
-  send_code "✅ SMS watch enabled (every <b>${interval}</b>s). Existing inbox messages are not resent.
+  if _check_sms_watch_start_loop "$CID"; then
+    send_code "✅ SMS watch enabled (every <b>${interval}</b>s). Existing inbox messages are not resent.
 <i>The module auto-watches after boot — use /sms_watch_off to pause.</i>"
+  else
+    send_code "❌ SMS watch process exited immediately.
+Check <code>/data/local/tmp/tg_device_bot.log</code> — often <code>content</code> / <code>READ_SMS</code>.
+On device: <code>content query --uri content://sms/inbox --limit 1</code>"
+  fi
 }
 
 handle_sms_watch_off() {

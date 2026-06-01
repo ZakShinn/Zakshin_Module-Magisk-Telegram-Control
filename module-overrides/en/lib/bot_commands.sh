@@ -10,7 +10,7 @@ tg_bot_commands_cache_key() {
 
 tg_bot_commands_json() {
   cat <<'EOF'
-[{"command":"start","description":"Start bot · command list"},{"command":"help","description":"Show command list"},{"command":"dev","description":"Advanced: network, display, apps, USB…"},{"command":"status","description":"Basic device status"},{"command":"signal","description":"Cellular: RAT, band, RSRP"},{"command":"ip","description":"Local IPv4/IPv6 and WAN IP"},{"command":"ping","description":"Ping (default 1.1.1.1)"},{"command":"battery","description":"Current battery info"},{"command":"datausage","description":"Realtime data usage"},{"command":"sms","description":"Latest inbox SMS"},{"command":"shutdown","description":"Power off"},{"command":"restart","description":"Reboot device"}]
+[{"command":"start","description":"Start bot · command list"},{"command":"help","description":"Show command list"},{"command":"dev","description":"Advanced: network, display, SMS watch…"},{"command":"status","description":"Basic device status"},{"command":"signal","description":"Cellular: RAT, band, RSRP"},{"command":"ip","description":"Local IPv4/IPv6 and WAN IP"},{"command":"ping","description":"Ping (default 1.1.1.1)"},{"command":"battery","description":"Current battery info"},{"command":"datausage","description":"Realtime data usage"},{"command":"sms","description":"Latest inbox SMS"},{"command":"sentsms","description":"Send SMS: sentsms number text"},{"command":"shutdown","description":"Power off"},{"command":"restart","description":"Reboot device"}]
 EOF
 }
 

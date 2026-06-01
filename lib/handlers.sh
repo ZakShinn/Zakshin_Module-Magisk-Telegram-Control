@@ -14,6 +14,8 @@ handle_help() {
 /battery           - Thông tin pin hiện tại
 /datausage     - Dung lượng data đã dùng
 /sms [số]          - SMS gần nhất trong inbox (mặc định 1; ví dụ <code>/sms 5</code>)
+/sentsms SĐT nội_dung - Gửi SMS (vd: <code>/sentsms 888 data_on</code>)
+<i>SMS mới trong inbox tự gửi Telegram khi bot chạy. Tắt/bật: /dev → /sms_watch_off · /sms_watch_on</i>
 
 /shutdown     - Tắt máy
 /restart            - Khởi động lại
@@ -249,6 +251,8 @@ dispatch_command() {
     return 0
   fi
 
+  TEXT="$(tg_normalize_telegram_command "$TEXT")"
+
   case "$TEXT" in
     "/help")
       notify_command_received "$TEXT"
@@ -304,6 +308,12 @@ dispatch_command() {
       notify_command_received "$TEXT"
       handle_datausage
       ;;
+    /sentsms*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/sentsms}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_sentsms "$rest"
+      ;;
     "/sms_watch_off")
       notify_command_received "$TEXT"
       handle_sms_watch_off
@@ -314,13 +324,11 @@ dispatch_command() {
       rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
       handle_sms_watch_on "$rest" "$CID"
       ;;
-    /sent_sms*)
+    "/sms")
       notify_command_received "$TEXT"
-      rest="${TEXT#/sent_sms}"
-      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
-      handle_sent_sms "$rest"
+      handle_sms ""
       ;;
-    /sms*)
+    "/sms "*)
       notify_command_received "$TEXT"
       rest="${TEXT#/sms}"
       rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"

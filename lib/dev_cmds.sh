@@ -119,15 +119,18 @@ handle_torch_on() {
     send_code "✅ Đèn pin: <b>BẬT</b>"
     return
   fi
-  for f in /sys/class/leds/*/brightness /sys/class/leds/torch-light0/brightness; do
-    if [ -w "$f" ]; then
-      echo 255 >"$f" 2>/dev/null && {
-        send_code "✅ Đèn pin: <b>BẬT</b> (sysfs)"
-        return
-      }
-    fi
+  for f in \
+    /sys/class/leds/led:torch_0/brightness \
+    /sys/class/leds/torch-sec1/brightness \
+    /sys/class/leds/torch-light0/brightness \
+    /sys/class/leds/*/brightness; do
+    [ -e "$f" ] || continue
+    echo 255 >"$f" 2>/dev/null && {
+      send_code "✅ Đèn pin: <b>BẬT</b> (sysfs)"
+      return
+    }
   done
-  send_code "❌ Không bật đèn pin (<code>cmd flashlight</code> / sysfs)."
+  send_code "❌ Không bật đèn pin (ROM không có <code>cmd flashlight</code>; sysfs bị SELinux chặn trên một số máy)."
 }
 
 handle_torch_off() {
@@ -135,13 +138,16 @@ handle_torch_off() {
     send_code "✅ Đèn pin: <b>TẮT</b>"
     return
   fi
-  for f in /sys/class/leds/*/brightness /sys/class/leds/torch-light0/brightness; do
-    if [ -w "$f" ]; then
-      echo 0 >"$f" 2>/dev/null && {
-        send_code "✅ Đèn pin: <b>TẮT</b>"
-        return
-      }
-    fi
+  for f in \
+    /sys/class/leds/led:torch_0/brightness \
+    /sys/class/leds/torch-sec1/brightness \
+    /sys/class/leds/torch-light0/brightness \
+    /sys/class/leds/*/brightness; do
+    [ -e "$f" ] || continue
+    echo 0 >"$f" 2>/dev/null && {
+      send_code "✅ Đèn pin: <b>TẮT</b>"
+      return
+    }
   done
   send_code "❌ Không tắt đèn pin."
 }
@@ -753,14 +759,15 @@ dev_commands_help_full() {
 • <code>/input</code> văn_bản (focus ô nhập trước)
 • <code>/unknown_sources_on</code> · <code>/unknown_sources_off</code>
 
-<b>📨 SMS</b>
-• <code>/sent_sms</code> SĐT nội_dung — Gửi SMS (vd: <code>/sent_sms 888 data_on</code>)
+<b>📨 SMS inbox → Telegram</b>
+• Mặc định <b>bật</b> khi bot chạy (tin mới tự gửi)
+• <code>/sms_watch_off</code> — Tạm dừng
+• <code>/sms_watch_on</code> [giây] — Bật lại (chu kỳ poll, mặc định 8s)
 
 <b>🔁 Khác</b>
 • <code>/sync_on</code> · <code>/sync_off</code> — Đồng bộ
 • <code>/location_on</code> · <code>/location_off</code> — GPS
 • <code>/dnd_on</code> · <code>/dnd_off</code> — Không làm phiền
-• SMS mới → Telegram <i>(tự bật khi bot chạy)</i> · <code>/sms_watch_off</code> tạm dừng · <code>/sms_watch_on</code> bật lại
 • <code>/loop_on</code> &lt;phút&gt; &lt;lệnh&gt; · <code>/loop_off</code>
 
 <code>────────────────────────</code>

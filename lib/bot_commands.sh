@@ -12,7 +12,7 @@ tg_bot_commands_cache_key() {
 
 tg_bot_commands_json() {
   cat <<'EOF'
-[{"command":"start","description":"Khởi động bot · danh sách lệnh"},{"command":"help","description":"Hiển thị danh sách lệnh"},{"command":"dev","description":"Lệnh nâng cao: mạng, màn hình, app, USB…"},{"command":"status","description":"Thông tin cơ bản thiết bị"},{"command":"signal","description":"Báo cáo mạng: RAT, băng tần, RSRP"},{"command":"ip","description":"IPv4/IPv6 cục bộ và IP WAN"},{"command":"ping","description":"Ping (mặc định 1.1.1.1)"},{"command":"battery","description":"Thông tin pin hiện tại"},{"command":"datausage","description":"Dung lượng data đã dùng"},{"command":"sms","description":"SMS gần nhất trong inbox"},{"command":"shutdown","description":"Tắt máy"},{"command":"restart","description":"Khởi động lại"}]
+[{"command":"start","description":"Khởi động bot · danh sách lệnh"},{"command":"help","description":"Hiển thị danh sách lệnh"},{"command":"dev","description":"Lệnh nâng cao: mạng, màn hình, SMS watch…"},{"command":"status","description":"Thông tin cơ bản thiết bị"},{"command":"signal","description":"Báo cáo mạng: RAT, băng tần, RSRP"},{"command":"ip","description":"IPv4/IPv6 cục bộ và IP WAN"},{"command":"ping","description":"Ping (mặc định 1.1.1.1)"},{"command":"battery","description":"Thông tin pin hiện tại"},{"command":"datausage","description":"Dung lượng data đã dùng"},{"command":"sms","description":"SMS gần nhất trong inbox"},{"command":"sentsms","description":"Gửi SMS: sentsms SĐT nội_dung"},{"command":"shutdown","description":"Tắt máy"},{"command":"restart","description":"Khởi động lại"}]
 EOF
 }
 

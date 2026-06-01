@@ -38,14 +38,15 @@ dev_commands_help_full() {
 • <code>/input</code> text (focus a field first)
 • <code>/unknown_sources_on</code> · <code>/unknown_sources_off</code>
 
-<b>📨 SMS</b>
-• <code>/sent_sms</code> number text — Send SMS (e.g. <code>/sent_sms 888 data_on</code>)
+<b>📨 SMS inbox → Telegram</b>
+• <b>On</b> by default while the bot runs
+• <code>/sms_watch_off</code> — Pause
+• <code>/sms_watch_on</code> [seconds] — Resume (poll interval, default 8s)
 
 <b>🔁 Other</b>
 • <code>/sync_on</code> · <code>/sync_off</code> — Sync
 • <code>/location_on</code> · <code>/location_off</code> — GPS
 • <code>/dnd_on</code> · <code>/dnd_off</code> — Do not disturb
-• New SMS → Telegram <i>(auto on when bot runs)</i> · <code>/sms_watch_off</code> pause · <code>/sms_watch_on</code> resume
 • <code>/loop_on</code> &lt;minutes&gt; &lt;command&gt; · <code>/loop_off</code>
 
 <code>────────────────────────</code>

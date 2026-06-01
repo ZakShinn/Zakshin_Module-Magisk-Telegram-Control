@@ -5,3 +5,6 @@ web/module-files-en/
 node_modules/
 dist/
 TelegramControl_Mau/
+
+# Android SDK platform-tools (adb) — local only, do not commit/upload
+platform-tools/

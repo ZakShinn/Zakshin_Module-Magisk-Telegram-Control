@@ -18,8 +18,21 @@ const libSrc = path.join(repoRoot, "lib");
 const binSrc = path.join(repoRoot, "bin");
 const custSrc = path.join(repoRoot, "customize.sh");
 
+function toLf(text) {
+  return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+}
+
+/** Shell on device is sensitive to CRLF; normalize to LF in ZIP builds. */
+function copyShellFile(src, dst) {
+  if (!fs.existsSync(src)) return false;
+  fs.mkdirSync(path.dirname(dst), { recursive: true });
+  fs.writeFileSync(dst, toLf(fs.readFileSync(src, "utf8")), "utf8");
+  return true;
+}
+
 function copyFileIfExists(src, dst) {
   if (!fs.existsSync(src)) return false;
+  if (src.endsWith(".sh")) return copyShellFile(src, dst);
   fs.mkdirSync(path.dirname(dst), { recursive: true });
   fs.copyFileSync(src, dst);
   return true;
@@ -30,7 +43,7 @@ function copyDirFlatSh(srcDir, dstDir) {
   fs.mkdirSync(dstDir, { recursive: true });
   for (const name of fs.readdirSync(srcDir)) {
     if (!name.endsWith(".sh")) continue;
-    fs.copyFileSync(path.join(srcDir, name), path.join(dstDir, name));
+    copyShellFile(path.join(srcDir, name), path.join(dstDir, name));
   }
 }
 
@@ -132,7 +145,7 @@ function syncOne(destRoot, lang) {
     stripUpdateJsonFromModuleProp(propRaw),
     "utf8",
   );
-  fs.copyFileSync(path.join(repoRoot, "service.sh"), path.join(destRoot, "service.sh"));
+  copyShellFile(path.join(repoRoot, "service.sh"), path.join(destRoot, "service.sh"));
 
   if (!fs.existsSync(libSrc)) {
     console.error("sync-module: missing ../lib from repo root");

@@ -115,8 +115,9 @@ while true; do
     OFFSET=$((LAST_UPDATE_ID + 1))
     echo "$OFFSET" > "$BOT_OFFSET_FILE"
 
-    TEXT="$(echo "$RESP" | grep -o '"text":"[^"]*"' | sed 's/^"text":"//;s/"$//' | tail -n1)"
-    CID="$(echo "$RESP" | grep -o '"chat":{"id":[-0-9]*' | sed 's/.*"id"://' | tail -n1)"
+    TEXT="$(tg_extract_update_text "$RESP")"
+    CID="$(tg_extract_update_chat_id "$RESP")"
+    TEXT="$(tg_normalize_telegram_command "$TEXT")"
 
     dispatch_command "$TEXT" "$CID"
   fi

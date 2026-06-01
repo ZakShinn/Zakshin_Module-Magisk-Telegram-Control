@@ -14,6 +14,8 @@ handle_help() {
 /battery              - Current battery info
 /datausage            - Realtime interface traffic totals
 /sms [count]          - Latest inbox SMS (default 1; e.g. <code>/sms 5</code>)
+/sentsms number text  - Send SMS (e.g. <code>/sentsms 888 data_on</code>)
+<i>New inbox SMS are auto-forwarded while the bot runs. Toggle in /dev: /sms_watch_off · /sms_watch_on</i>
 
 /shutdown             - Power off
 /restart              - Reboot
@@ -247,6 +249,8 @@ dispatch_command() {
     return 0
   fi
 
+  TEXT="$(tg_normalize_telegram_command "$TEXT")"
+
   case "$TEXT" in
     "/help")
       notify_command_received "$TEXT"
@@ -302,6 +306,12 @@ dispatch_command() {
       notify_command_received "$TEXT"
       handle_datausage
       ;;
+    /sentsms*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/sentsms}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_sentsms "$rest"
+      ;;
     "/sms_watch_off")
       notify_command_received "$TEXT"
       handle_sms_watch_off
@@ -312,13 +322,11 @@ dispatch_command() {
       rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
       handle_sms_watch_on "$rest" "$CID"
       ;;
-    /sent_sms*)
+    "/sms")
       notify_command_received "$TEXT"
-      rest="${TEXT#/sent_sms}"
-      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
-      handle_sent_sms "$rest"
+      handle_sms ""
       ;;
-    /sms*)
+    "/sms "*)
       notify_command_received "$TEXT"
       rest="${TEXT#/sms}"
       rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
