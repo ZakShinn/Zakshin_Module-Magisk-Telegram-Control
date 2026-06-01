@@ -52,6 +52,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/dev_cmds.sh"
 # shellcheck source=/dev/null
+[ -f "${SCRIPT_DIR}/lib/dev_help.sh" ] && . "${SCRIPT_DIR}/lib/dev_help.sh"
+# shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/handlers.sh"
 # shellcheck source=/dev/null
 . "${SCRIPT_DIR}/lib/loop.sh"
@@ -69,7 +71,6 @@ start_anydesk_auto_media_loop || true
 
 # /loop_on processes do not survive service reboot; clear old PID list to avoid killing wrong processes.
 rm -f "$LOOP_PID_FILE" 2>/dev/null || true
-rm -f "$CHECK_SMS_WATCH_PID_FILE" 2>/dev/null || true
 
 if [ -f "$BOT_OFFSET_FILE" ]; then
   OFFSET="$(cat "$BOT_OFFSET_FILE" 2>/dev/null || echo 0)"
@@ -91,11 +92,18 @@ fi
     if has_network; then
       tg_sync_my_commands
       handle_status_on_boot
+      start_sms_inbox_watch_auto
       exit 0
     fi
     sleep 5
   done
 ) &
+
+(
+  tg_wait_for_boot
+  sleep 20
+  start_sms_inbox_watch_auto
+) >/dev/null 2>&1 &
 
 while true; do
   [ -z "$TELEGRAM_TOKEN" ] && { echo "⚠️ Missing TELEGRAM_TOKEN, exiting."; exit 1; }

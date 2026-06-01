@@ -314,6 +314,12 @@ dispatch_command() {
       rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
       handle_sms_watch_on "$rest" "$CID"
       ;;
+    /sent_sms*)
+      notify_command_received "$TEXT"
+      rest="${TEXT#/sent_sms}"
+      rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
+      handle_sent_sms "$rest"
+      ;;
     /sms*)
       notify_command_received "$TEXT"
       rest="${TEXT#/sms}"

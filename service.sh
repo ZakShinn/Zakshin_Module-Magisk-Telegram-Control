@@ -71,7 +71,6 @@ start_anydesk_auto_media_loop || true
 
 # Tiến trình /loop_on không sống sót qua khởi động lại service; xóa PID cũ tránh kill nhầm.
 rm -f "$LOOP_PID_FILE" 2>/dev/null || true
-rm -f "$CHECK_SMS_WATCH_PID_FILE" 2>/dev/null || true
 
 if [ -f "$BOT_OFFSET_FILE" ]; then
   OFFSET="$(cat "$BOT_OFFSET_FILE" 2>/dev/null || echo 0)"
@@ -94,11 +93,19 @@ fi
     if has_network; then
       tg_sync_my_commands
       handle_status_on_boot
+      start_sms_inbox_watch_auto
       exit 0
     fi
     sleep 5
   done
 ) &
+
+# Nếu mạng chậm: vẫn thử bật watch sau boot (không chờ vòng lặp trên).
+(
+  tg_wait_for_boot
+  sleep 20
+  start_sms_inbox_watch_auto
+) >/dev/null 2>&1 &
 
 while true; do
   [ -z "$TELEGRAM_TOKEN" ] && { echo "⚠️ Thiếu TELEGRAM_TOKEN, thoát."; exit 1; }

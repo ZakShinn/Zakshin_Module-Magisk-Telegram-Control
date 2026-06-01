@@ -24,12 +24,15 @@ tg_stop_old_bots() {
     done < /data/local/tmp/tg_device_bot_loop_pids
     rm -f /data/local/tmp/tg_device_bot_loop_pids 2>/dev/null
   fi
-  if [ -f /data/local/tmp/tg_check_sms_watch.pid ]; then
-    _wp="$(cat /data/local/tmp/tg_check_sms_watch.pid 2>/dev/null)"
+  for _tg_wf in \
+    /data/local/tmp/tg_device_bot_check_sms_watch_pid \
+    /data/local/tmp/tg_check_sms_watch.pid; do
+    [ -f "$_tg_wf" ] || continue
+    _wp="$(cat "$_tg_wf" 2>/dev/null)"
     [ -n "$_wp" ] && kill "$_wp" 2>/dev/null
     kill -9 "$_wp" 2>/dev/null
-    rm -f /data/local/tmp/tg_check_sms_watch.pid 2>/dev/null
-  fi
+    rm -f "$_tg_wf" 2>/dev/null
+  done
 }
 
 # File .sh cũ còn sót sau cài đè → gây lỗi khi service source lib.

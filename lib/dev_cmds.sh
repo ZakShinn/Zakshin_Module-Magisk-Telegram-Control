@@ -715,50 +715,59 @@ handle_unknown_sources_off() {
   send_code "✅ Chặn cài APK nguồn không xác định (settings)."
 }
 
-# Danh sách /dev (2 tin nếu dài)
-dev_commands_help_text() {
+# Danh sách /dev — một tin, HTML gọn (Telegram parse_mode HTML)
+dev_commands_help_full() {
   cat <<'EOF'
-<b>/dev (1/2)</b> — lệnh nâng cao · <code>svc cmd settings am input</code>
+<b>🛠 Lệnh nâng cao · /dev</b>
+<i>Một số lệnh phụ thuộc ROM / quyền — thử từng lệnh nếu không phản hồi</i>
+<code>────────────────────────</code>
 
-<b>Mạng</b>
-/airplane_on·off /data_on·off /nfc_on·off
-/wifi_on·off /wifi_info /wifi_scan
-/bt_on·off /bt_info
-/usb_lan_on·off /rndis_on·off /usb_status /tether_status /dns /net_if
-/hotspot_on [SSID MK]·off /hotspot_status
+<b>📡 Mạng</b>
+• <code>/airplane_on</code> · <code>/airplane_off</code> — Máy bay
+• <code>/data_on</code> · <code>/data_off</code> — Dữ liệu di động
+• <code>/nfc_on</code> · <code>/nfc_off</code> — NFC
+• <code>/wifi_on</code> · <code>/wifi_off</code> · <code>/wifi_info</code> · <code>/wifi_scan</code>
+• <code>/bt_on</code> · <code>/bt_off</code> · <code>/bt_info</code>
+• <code>/usb_lan_on</code> · <code>/usb_lan_off</code> · <code>/rndis_on</code> · <code>/rndis_off</code>
+• <code>/usb_status</code> · <code>/tether_status</code> · <code>/dns</code> · <code>/net_if</code>
+• <code>/hotspot_on</code> [SSID mật_khẩu] · <code>/hotspot_off</code> · <code>/hotspot_status</code>
 
-<b>Màn hình · âm thanh</b>
-/torch_on·off /screen_on·off /lock /screenshot
-/brightness [0-255] /brightness_auto /brightness_manual
-/volume [0-15] /vol_up /vol_down /media_play
-/stayon_on·off /rotate_on·off
-/ringer_normal·silent·vibrate /anim_on·off
-EOF
-}
+<b>🖥 Màn hình · âm thanh</b>
+• <code>/torch_on</code> · <code>/torch_off</code> · <code>/screen_on</code> · <code>/screen_off</code>
+• <code>/lock</code> · <code>/screenshot</code>
+• <code>/brightness</code> [0–255] · <code>/brightness_auto</code> · <code>/brightness_manual</code>
+• <code>/volume</code> [0–15] · <code>/vol_up</code> · <code>/vol_down</code> · <code>/media_play</code>
+• <code>/stayon_on</code> · <code>/stayon_off</code> · <code>/rotate_on</code> · <code>/rotate_off</code>
+• <code>/ringer_normal</code> · <code>/ringer_silent</code> · <code>/ringer_vibrate</code>
+• <code>/anim_on</code> · <code>/anim_off</code>
 
-dev_commands_help_text2() {
-  cat <<'EOF'
-<b>/dev (2/2)</b>
+<b>⚙️ Hệ thống</b>
+• <code>/device</code> · <code>/cpu</code> · <code>/temp</code> · <code>/storage</code> · <code>/mem</code>
+• <code>/uptime</code> · <code>/datetime</code>
+• <code>/prop</code> tên_thuộc_tính · <code>/rootid</code>
+• <code>/logcat</code> [số_dòng] · <code>/logcat_clear</code> · <code>/dmesg</code>
+• <code>/reboot_recovery</code> · <code>/reboot_bootloader</code>
 
-<b>Hệ thống</b>
-/device /cpu /temp /storage /mem /uptime /datetime
-/prop tên /rootid
-/logcat [dòng] /logcat_clear /dmesg
-/reboot_recovery /reboot_bootloader
+<b>📦 Ứng dụng</b>
+• <code>/packages</code> [lọc] · <code>/pkg</code> tên_gói · <code>/open</code> · <code>/kill</code> · <code>/clear</code>
+• <code>/input</code> văn_bản (focus ô nhập trước)
+• <code>/unknown_sources_on</code> · <code>/unknown_sources_off</code>
 
-<b>Ứng dụng</b>
-/packages [lọc] /pkg gói /open /kill /clear gói
-/input văn_bản
-/unknown_sources_on·off
+<b>📨 SMS</b>
+• <code>/sent_sms</code> SĐT nội_dung — Gửi SMS (vd: <code>/sent_sms 888 data_on</code>)
 
-<b>Khác</b>
-/sync_on·off /location_on·off /dnd_on·off
-/sms_watch_on [giây]·off
-/loop_on &lt;phút&gt; &lt;lệnh&gt; · /loop_off
+<b>🔁 Khác</b>
+• <code>/sync_on</code> · <code>/sync_off</code> — Đồng bộ
+• <code>/location_on</code> · <code>/location_off</code> — GPS
+• <code>/dnd_on</code> · <code>/dnd_off</code> — Không làm phiền
+• SMS mới → Telegram <i>(tự bật khi bot chạy)</i> · <code>/sms_watch_off</code> tạm dừng · <code>/sms_watch_on</code> bật lại
+• <code>/loop_on</code> &lt;phút&gt; &lt;lệnh&gt; · <code>/loop_off</code>
+
+<code>────────────────────────</code>
+<i>Lệnh cơ bản: gõ /help · Tham số [ ] là tuỳ chọn</i>
 EOF
 }
 
 dev_commands_send_help() {
-  send_code "$(dev_commands_help_text)"
-  send_code "$(dev_commands_help_text2)"
+  send_code "$(dev_commands_help_full)"
 }

@@ -17,3 +17,7 @@ TELEGRAM_CHAT_ID=""
 # HOTSPOT_SSID="MyHotspot"
 # HOTSPOT_PASS="ban_mat_khau"
 
+# SMS mới → tự gửi Telegram (mặc định bật, không cần /sms_watch_on).
+# SMS_WATCH_INTERVAL=8
+# SMS_WATCH_AUTO=0
+
