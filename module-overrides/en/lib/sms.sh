@@ -122,9 +122,9 @@ sms_send_inbox_row() {
   out="<b>${title}</b>
 <i>${ts_esc}</i>
 ━━━━━━━━━━━━━━━━
-<b>From</b> <code>${addr_esc}</code>
+<b>From</b> ${addr_esc}
 <b>Time</b> <i>${dt_esc}</i>
-<pre>${body_esc}</pre>"
+${body_esc}"
 
   msg_len="$(printf '%s' "$out" | wc -c | tr -d ' ')"
   if [ "${msg_len:-0}" -gt "$SMS_TG_MSG_MAX" ] 2>/dev/null; then
@@ -133,9 +133,9 @@ sms_send_inbox_row() {
     out="<b>${title}</b>
 <i>${ts_esc}</i>
 ━━━━━━━━━━━━━━━━
-<b>From</b> <code>${addr_esc}</code>
+<b>From</b> ${addr_esc}
 <b>Time</b> <i>${dt_esc}</i>
-<pre>${body_esc}</pre>"
+${body_esc}"
   fi
   send_code "$out"
 }
@@ -206,8 +206,8 @@ handle_sms() {
     addr_esc="$(escape_html "$addr")"
     dt_esc="$(escape_html "$dt_h")"
     body_esc="$(escape_html "$body_out")"
-    out="${out}<b>${idx}.</b> <code>${addr_esc}</code> · <i>${dt_esc}</i>
-<pre>${body_esc}</pre>
+    out="${out}<b>${idx}.</b> ${addr_esc} · <i>${dt_esc}</i>
+${body_esc}
 
 "
   done <<EOF

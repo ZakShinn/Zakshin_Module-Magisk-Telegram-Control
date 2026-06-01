@@ -136,8 +136,8 @@ sms_send_inbox_row() {
   out="<b>${title}</b>
 <i>${ts_esc}</i>
 ━━━━━━━━━━━━━━━━
-<b>Từ</b> <code>${addr_esc}</code>
-<pre>${body_esc}</pre>"
+<b>Từ</b> ${addr_esc}
+${body_esc}"
 
   msg_len="$(printf '%s' "$out" | wc -c | tr -d ' ')"
   if [ "${msg_len:-0}" -gt "$SMS_TG_MSG_MAX" ] 2>/dev/null; then
@@ -146,8 +146,8 @@ sms_send_inbox_row() {
     out="<b>${title}</b>
 <i>${ts_esc}</i>
 ━━━━━━━━━━━━━━━━
-<b>Từ</b> <code>${addr_esc}</code>
-<pre>${body_esc}</pre>"
+<b>Từ</b> ${addr_esc}
+${body_esc}"
   fi
   send_code "$out"
 }
@@ -213,8 +213,8 @@ handle_sms() {
     body_out="$(_sms_body_for_telegram "$body" "$SMS_BODY_PREVIEW_MAX")"
     addr_esc="$(escape_html "$addr")"
     body_esc="$(escape_html "$body_out")"
-    out="${out}<b>${idx}.</b> <code>${addr_esc}</code>
-<pre>${body_esc}</pre>
+    out="${out}<b>${idx}.</b> ${addr_esc}
+${body_esc}
 
 "
   done <"$_tf"
@@ -223,8 +223,31 @@ handle_sms() {
   send_code "$out"
 }
 
-SMS_SENT_URI="content://sms/sent"
 SMS_SEND_CALLING_PKG="com.android.phone"
+SMS_SENT_URI="content://sms/sent"
+SMS_SEND_VERIFY_SEC="${TG_SMS_VERIFY_SEC:-35}"
+
+_sms_valid_dest() {
+  d="$1"
+  [ -z "$d" ] && return 1
+  case "$d" in +*) d="${d#+}" ;; esac
+  echo "$d" | grep -q '^[0-9][0-9]*$' || return 1
+  [ "${#d}" -ge 3 ] && [ "${#d}" -le 16 ]
+}
+
+_sms_svc_text() {
+  printf '%s' "$1" | tr '\n\r' ' ' | sed 's/"/'"'"'/g'
+}
+
+# Binder trả Parcel không có nghĩa SMS đã gửi — chỉ coi là không lỗi tức thì.
+_sms_service_ok() {
+  out="$1"
+  [ -z "$out" ] && return 1
+  printf '%s' "$out" | grep -qiE 'SecurityException|Permission denial|Not allowed|Unknown service|No such service|IllegalArgument|NullPointerException|Error type|does not exist' && return 1
+  printf '%s' "$out" | grep -qiE 'fffffffe|fffffffc|Parcelable|Exception' && return 1
+  printf '%s' "$out" | grep -qiE 'Result: Parcel\([^)]*00000000' && return 0
+  return 1
+}
 
 _sms_digits_only() {
   printf '%s' "$1" | tr -cd '0-9'
@@ -240,24 +263,76 @@ _sms_dest_match() {
   return 1
 }
 
-_sms_valid_dest() {
-  d="$1"
-  [ -z "$d" ] && return 1
-  case "$d" in +*) d="${d#+}" ;; esac
-  echo "$d" | grep -q '^[0-9][0-9]*$' || return 1
-  [ "${#d}" -ge 3 ] && [ "${#d}" -le 16 ]
+_sms_sub_ids_list() {
+  for id in 1 0 2; do
+    echo "$id"
+  done
 }
 
-_sms_svc_text() {
-  printf '%s' "$1" | tr '\n\r' ' ' | sed 's/"/'"'"'/g'
+_sms_content_query_sent() {
+  bin="$1"
+  lim="$2"
+  for proj in "_id:address:date:body" "_id,address,date,body" "address:date:body" "address,date,body"; do
+    out="$($bin query --uri "$SMS_SENT_URI" --projection "$proj" --sort "date DESC" 2>/dev/null)"
+    if echo "$out" | grep -q '^Row:'; then
+      echo "$out" | grep '^Row:' | head -n "$lim"
+      return 0
+    fi
+    out="$($bin query --uri "$SMS_SENT_URI" --projection "$proj" 2>/dev/null)"
+    if echo "$out" | grep -q '^Row:'; then
+      echo "$out" | grep '^Row:' | head -n "$lim"
+      return 0
+    fi
+  done
+  out="$($bin query --uri "$SMS_SENT_URI" 2>/dev/null)"
+  echo "$out" | grep '^Row:' | head -n "$lim"
 }
 
-_sms_service_ok() {
-  out="$1"
-  [ -z "$out" ] && return 0
-  printf '%s' "$out" | grep -qiE 'SecurityException|Permission denial|Not allowed|Unknown service|No such service|IllegalArgument|NullPointerException|Error type|does not exist' && return 1
-  printf '%s' "$out" | grep -qi 'Parcel' && return 0
-  printf '%s' "$out" | grep -qiE 'Result: Parcel|0x[0-9a-fA-F]+:' && return 0
+_sms_row_body_matches() {
+  row_body="$1"
+  want="$2"
+  [ -z "$row_body" ] || [ -z "$want" ] && return 1
+  case "$row_body" in "$want"*) return 0 ;; esac
+  want_d="$(_sms_digits_only "$want")"
+  row_d="$(_sms_digits_only "$row_body")"
+  [ -n "$want_d" ] && [ "$want_d" = "$row_d" ] && return 0
+  return 1
+}
+
+# Chờ tin xuất hiện trong content://sms/sent (sau khi user bấm xác nhận MmsService nếu có).
+sms_verify_sent() {
+  dest="$1"
+  text="$2"
+  since_sec="${3:-0}"
+  max_wait="${4:-$SMS_SEND_VERIFY_SEC}"
+  bin="$(_sms_content_bin)"
+  [ -z "$bin" ] && return 1
+  elapsed=0
+  while [ "$elapsed" -lt "$max_wait" ]; do
+    raw="$(_sms_content_query_sent "$bin" 12)"
+    _tf="/data/local/tmp/tg_sms_sent_chk.$$"
+    printf '%s\n' "$raw" | grep '^Row:' >"$_tf"
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+      addr="$(_sms_parse_address "$line")"
+      _sms_dest_match "$dest" "$addr" || continue
+      row_body="$(_sms_parse_body_from_row "$line")"
+      [ -z "$row_body" ] && row_body="$(printf '%s' "$line" | sed -n 's/.*, body=\(.*\), service_center=.*/\1/p')"
+      _sms_row_body_matches "$row_body" "$text" || continue
+      if [ -n "$since_sec" ] && tg_is_uint "$since_sec"; then
+        dt_ms="$(_sms_parse_date_ms "$line")"
+        row_sec="$(_sms_date_ms_to_sec "$dt_ms")" || row_sec=""
+        if [ -n "$row_sec" ] && [ "$row_sec" -lt "$((since_sec - 10))" ] 2>/dev/null; then
+          continue
+        fi
+      fi
+      rm -f "$_tf"
+      return 0
+    done <"$_tf"
+    rm -f "$_tf"
+    sleep 2
+    elapsed=$((elapsed + 2))
+  done
   return 1
 }
 
@@ -300,15 +375,16 @@ _sms_try_service_send_m5() {
   text="$2"
   sub="$3"
   pkg="$4"
+  tag="$pkg"
+  out="$(service call isms 5 i32 "$sub" s16 "$pkg" s16 "$tag" s16 "$dest" s16 "null" s16 "$text" s16 "null" s16 "null" i32 0 i64 0 2>&1)" || true
+  if _sms_service_ok "$out"; then
+    return 0
+  fi
   out="$(service call isms 5 i32 "$sub" s16 "$pkg" s16 "null" s16 "$dest" s16 "null" s16 "$text" s16 "null" s16 "null" i32 0 i64 0 2>&1)" || true
   if _sms_service_ok "$out"; then
     return 0
   fi
   out="$(service call isms 5 i32 "$sub" s16 "$pkg" s16 "" s16 "$dest" s16 "null" s16 "$text" s16 "null" s16 "null" i32 0 i64 0 2>&1)" || true
-  if _sms_service_ok "$out"; then
-    return 0
-  fi
-  out="$(service call isms 5 i32 "$sub" s16 "$pkg" s16 "$dest" s16 "null" s16 "$text" s16 "null" s16 "null" i32 0 i32 0 2>&1)" || true
   _sms_service_ok "$out"
 }
 
@@ -343,15 +419,16 @@ _sms_try_am_sendto() {
   return 1
 }
 
-_sms_try_content_outbox() {
+_sms_send_and_verify() {
   dest="$1"
   text="$2"
-  bin="$(_sms_content_bin)"
-  [ -z "$bin" ] && return 1
-  out="$($bin insert --uri content://sms/outbox --bind address s:"$dest" --bind body s:"$text" --bind type i:4 2>&1)" || true
-  printf '%s' "$out" | grep -qiE 'permission|denied|error|exception' && return 1
-  [ -n "$out" ] && return 0
-  return 1
+  since_sec="$3"
+  shift 3
+  if "$@"; then
+    sms_verify_sent "$dest" "$text" "$since_sec" "$SMS_SEND_VERIFY_SEC"
+  else
+    return 1
+  fi
 }
 
 sms_send_text() {
@@ -360,99 +437,34 @@ sms_send_text() {
   [ -z "$dest" ] || [ -z "$text" ] && return 1
 
   command -v service >/dev/null 2>&1 || return 1
-  _tf="/data/local/tmp/tg_sms_pkgs.$$"
-  _sms_calling_pkg_list >"$_tf"
-  for sub in 0 1 2; do
+  since_sec="$(date +%s 2>/dev/null)" || since_sec=0
+  _pkgtf="/data/local/tmp/tg_sms_pkgs.$$"
+  _stf="/data/local/tmp/tg_sms_subs.$$"
+  _sms_calling_pkg_list >"$_pkgtf"
+  _sms_sub_ids_list >"$_stf"
+  while IFS= read -r sub; do
+    [ -z "$sub" ] && continue
     while IFS= read -r pkg; do
       [ -z "$pkg" ] && continue
-      _sms_try_service_send_m7 "$dest" "$text" "$sub" "$pkg" && {
-        rm -f "$_tf"
+      if _sms_send_and_verify "$dest" "$text" "$since_sec" _sms_try_service_send_m5 "$dest" "$text" "$sub" "$pkg"; then
+        rm -f "$_pkgtf" "$_stf"
         return 0
-      }
-      _sms_try_service_send_m5 "$dest" "$text" "$sub" "$pkg" && {
-        rm -f "$_tf"
+      fi
+      if _sms_send_and_verify "$dest" "$text" "$since_sec" _sms_try_service_send_m7 "$dest" "$text" "$sub" "$pkg"; then
+        rm -f "$_pkgtf" "$_stf"
         return 0
-      }
-    done <"$_tf"
-  done
-  rm -f "$_tf"
-  _sms_try_cmd_phone "$dest" "$text" && return 0
-  _sms_try_content_outbox "$dest" "$text" && return 0
-  # Mở app SMS (luôn có thể cần bấm Gửi / xác nhận) — chỉ khi bật TG_SMS_USE_UI=1
-  [ "${TG_SMS_USE_UI:-0}" = "1" ] && _sms_try_am_sendto "$dest" "$text" && return 0
-  return 1
-}
-
-sms_query_sent_raw() {
-  lim="${1:-5}"
-  bin="$(_sms_content_bin)"
-  [ -z "$bin" ] && return 1
-  for proj in "address:date:body" "address,date,body"; do
-    out="$($bin query --uri "$SMS_SENT_URI" --projection "$proj" --sort "date DESC" 2>/dev/null)"
-    if echo "$out" | grep -q '^Row:'; then
-      echo "$out" | grep '^Row:' | head -n "$lim"
-      return 0
-    fi
-  done
-  out="$($bin query --uri "$SMS_SENT_URI" 2>/dev/null)"
-  echo "$out" | grep '^Row:' | head -n "$lim"
-}
-
-sms_find_sent_row() {
-  dest="$1"
-  body="$2"
-  raw="$(sms_query_sent_raw 8)"
-  [ -z "$raw" ] && return 1
-  _found=""
-  _tf="/data/local/tmp/tg_sms_sent.$$"
-  printf '%s\n' "$raw" | grep '^Row:' | head -n 8 >"$_tf"
-  while IFS= read -r line; do
-    [ -z "$line" ] && continue
-    addr="$(_sms_parse_address "$line")"
-    row_body="$(_sms_parse_body_from_row "$line")"
-    [ -z "$row_body" ] && row_body="$(printf '%s' "$line" | sed -n 's/.*, body=\(.*\), service_center=.*/\1/p')"
-    _sms_dest_match "$dest" "$addr" || continue
-    case "$row_body" in
-      "$body"*) _found="$line"; break ;;
-    esac
-    body_d="$(_sms_digits_only "$body")"
-    row_d="$(_sms_digits_only "$row_body")"
-    if [ -n "$body_d" ] && [ "$body_d" = "$row_d" ]; then
-      _found="$line"
-      break
-    fi
-  done <"$_tf"
-  rm -f "$_tf"
-  [ -n "$_found" ] && printf '%s' "$_found"
-}
-
-sms_report_sent_to_telegram() {
-  dest="$1"
-  body="$2"
-  status="$3"
-
-  dest_esc="$(escape_html "$dest")"
-  body_esc="$(escape_html "$body")"
-  ts="$(date '+%H:%M:%S · %d/%m/%Y' 2>/dev/null || echo '-')"
-  ts_esc="$(escape_html "$ts")"
-
-  if [ "$status" = "ok" ]; then
-    head="✅ <b>Đã gửi SMS</b>"
-    stat_line="<b>Trạng thái</b>: Đã gửi"
-  else
-    head="❌ <b>Gửi SMS thất bại</b>"
-    stat_line="<b>Trạng thái</b>: Không gửi được từ shell (ROM / quyền SEND_SMS)"
+      fi
+    done <"$_pkgtf"
+  done <"$_stf"
+  rm -f "$_pkgtf" "$_stf"
+  if _sms_try_cmd_phone "$dest" "$text"; then
+    sms_verify_sent "$dest" "$text" "$since_sec" "$SMS_SEND_VERIFY_SEC" && return 0
   fi
-
-  out="${head}
-<i>${ts_esc}</i>
-<code>────────────────────────</code>
-<b>Đến</b> <code>${dest_esc}</code>
-<b>Nội dung</b>
-<pre>${body_esc}</pre>
-${stat_line}"
-
-  send_code "$out"
+  if [ "${TG_SMS_USE_UI:-0}" = "1" ]; then
+    _sms_try_am_sendto "$dest" "$text" || true
+    sms_verify_sent "$dest" "$text" "$since_sec" "$SMS_SEND_VERIFY_SEC" && return 0
+  fi
+  return 1
 }
 
 handle_sentsms() {
@@ -484,13 +496,11 @@ Ví dụ: <code>/sentsms 888 data_on</code> — gửi <code>data_on</code> tới
     return 1
   fi
 
-  send_code "📤 Đang gửi SMS tới <code>$(escape_html "$num")</code>…"
+  send_code "📤 Đang gửi… <i>(nếu máy hỏi xác nhận MmsService, bấm Gửi trong ~${SMS_SEND_VERIFY_SEC}s)</i>"
 
   if sms_send_text "$num" "$body"; then
-    sms_report_sent_to_telegram "$num" "$body" "ok"
+    send_code "✅ Đã gửi tin nhắn."
   else
-    sms_report_sent_to_telegram "$num" "$body" "fail"
-    def_pkg="$(_sms_default_calling_pkg)"
-    send_code "💡 Không gửi được từ shell. SMS mặc định: <code>$(escape_html "${def_pkg:-?}")</code>. Hộp thoại <b>MmsService</b> trên Android 15/Samsung thường không tắt được — cần bấm xác nhận hoặc dùng số thường thay số dịch vụ."
+    send_code "❌ Không gửi được tin nhắn (không thấy trong hộp thư đã gửi). Kiểm tra màn hình máy và thử lại."
   fi
 }
