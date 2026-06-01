@@ -1,5 +1,7 @@
 # TelegramControl — Magisk module to control Android via Telegram
 
+**Phiên bản 5.0 Final** · `versionCode=501` · Builder: [magisk-telegram-control.vercel.app](https://magisk-telegram-control.vercel.app)
+
 **[Tiếng Việt](#tieng-viet)** · **[English](#english)**
 
 ---
@@ -37,6 +39,7 @@ Khi có internet sau khởi động, module tự gọi Telegram `setMyCommands` 
 
 - `/status`, `/signal`, `/ip`, `/ping`, `/battery`, `/datausage`
 - `/sms [count]`: đọc SMS inbox
+- `/sentsms SĐT nội_dung`: gửi SMS (alias cũ `/sendsms` vẫn dùng được)
 - `/shutdown`, `/restart` (không spam)
 
 **Nâng cao** (`/dev` — gõ `/dev`, 2 trang lệnh, ~60+ lệnh shell):
@@ -102,6 +105,7 @@ When online after boot, the module calls Telegram `setMyCommands` to refresh the
 
 - `/status`, `/signal`, `/ip`, `/ping`, `/battery`, `/datausage`
 - `/sms [count]`: read inbox SMS
+- `/sentsms number text`: send SMS (`/sendsms` alias still works)
 - `/shutdown`, `/restart` (do not spam)
 
 **Advanced** (`/dev` — two help messages, 60+ shell commands):

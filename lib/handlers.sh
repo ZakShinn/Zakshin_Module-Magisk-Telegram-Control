@@ -308,9 +308,12 @@ dispatch_command() {
       notify_command_received "$TEXT"
       handle_datausage
       ;;
-    /sentsms*)
+    /sendsms*|/sentsms*)
       notify_command_received "$TEXT"
-      rest="${TEXT#/sentsms}"
+      case "$TEXT" in
+        /sendsms*) rest="${TEXT#/sendsms}" ;;
+        *) rest="${TEXT#/sentsms}" ;;
+      esac
       rest="$(echo "$rest" | sed 's/^[[:space:]]*//')"
       handle_sentsms "$rest"
       ;;

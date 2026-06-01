@@ -67,9 +67,9 @@ tg_chat_allowed() {
   [ "$cid" = "$TELEGRAM_CHAT_ID" ]
 }
 
-# Telegram menu: /sentsms@MyBot 888 hi → /sentsms 888 hi
+# Telegram menu: /sentsms@MyBot 888 hi → /sentsms 888 hi; /sendsms → /sentsms (alias cũ)
 tg_normalize_telegram_command() {
-  printf '%s' "$1" | sed 's/^\(\/[^ @]*\)@[^ @]*/\1/'
+  printf '%s' "$1" | sed 's/^\(\/[^ @]*\)@[^ @]*/\1/' | sed 's|^/sendsms|/sentsms|'
 }
 
 # Tránh case *[!0-9]* — một số ROM /system/bin/sh báo syntax error.
