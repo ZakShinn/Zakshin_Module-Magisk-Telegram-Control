@@ -63,7 +63,7 @@ Khi có internet sau khởi động, module tự gọi Telegram `setMyCommands` 
 **PayPal:** [paypal.me/Zakshin](https://paypal.me/Zakshin)
 
 <p align="center">
-  <img src="./Paypal.png" alt="PayPal donate — paypal.me/Zakshin" width="220" />
+  <img src="./web/public/Paypal.png" alt="PayPal donate — paypal.me/Zakshin" width="220" />
 </p>
 
 
@@ -128,6 +128,6 @@ When online after boot, the module calls Telegram `setMyCommands` to refresh the
 **PayPal:** [paypal.me/Zakshin](https://paypal.me/Zakshin)
 
 <p align="center">
-  <img src="./Paypal.png" alt="PayPal donate — paypal.me/Zakshin" width="220" />
+  <img src="./web/public/Paypal.png" alt="PayPal donate — paypal.me/Zakshin" width="220" />
 </p>
 
